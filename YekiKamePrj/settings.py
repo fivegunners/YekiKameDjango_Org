@@ -79,8 +79,12 @@ WSGI_APPLICATION = 'YekiKamePrj.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Yekikame',
+        'USER': 'postgres',
+        'PASSWORD': '403723807',
+        'HOST': 'localhost',  # یا آدرس IP سرور پایگاه داده
+        'PORT': '',           # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
     }
 }
 
