@@ -1,8 +1,9 @@
 import graphene
-import userapp.schema  # فرض می‌کنیم نام اپلیکیشن شما userapp است
+import userapp.schema  # اضافه کردن schema اپلیکیشن userapp
+import Eventapp.schema  # اضافه کردن schema اپلیکیشن Eventapp
 
 
-class Query(userapp.schema.Query, graphene.ObjectType):
+class Query(userapp.schema.Query, Eventapp.schema.Query, graphene.ObjectType):
     pass
 
 
