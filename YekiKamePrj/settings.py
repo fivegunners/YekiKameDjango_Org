@@ -41,7 +41,8 @@ INSTALLED_APPS = [
 
     #My Apps
     'userapp',
-    'Eventapp'
+    'Eventapp',
+    'Support'
 ]
 
 MIDDLEWARE = [
