@@ -1,76 +1,75 @@
-
 # Django Project Setup Guide
 
-## پیش‌نیازها
+## Prerequisites
 
-1. **Python**: اطمینان حاصل کنید که Python 3.x نصب شده است.
-2. **pip**: ابزار pip برای مدیریت پکیج‌ها.
-3. **virtualenv** (اختیاری): برای ایجاد محیط مجازی (بهتر است از آن استفاده کنید).
+1. **Python**: Make sure Python 3.x is installed.
+2. **pip**: The pip package manager.
+3. **virtualenv** (optional): To create a virtual environment (recommended).
 
-## راه‌اندازی پروژه
+## Project Setup
 
-### 1. کلون کردن مخزن
+### 1. Clone the Repository
 
-ابتدا پروژه را کلون کنید:
+First, clone the project:
 
 ```bash
 git clone <URL-REPOSITORY>
-cd <نام-پروژه>
+cd <project-name>
 ```
 
-### 2. ایجاد و فعال‌سازی محیط مجازی
+### 2. Create and Activate a Virtual Environment
 
-یک محیط مجازی ایجاد و آن را فعال کنید:
+Create a virtual environment and activate it:
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # در لینوکس و مک
-venv\Scripts\activate     # در ویندوز
+source venv/bin/activate  # For Linux and macOS
+venv\Scripts\activate     # For Windows
 ```
 
-### 3. نصب پکیج‌ها
+### 3. Install Packages
 
-پکیج‌های موردنیاز پروژه را از طریق فایل `requirements.txt` نصب کنید:
+Install the required packages from the `requirements.txt` file:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. تنظیمات محیط (اختیاری)
+### 4. Environment Configuration (Optional)
 
-در صورت وجود تنظیمات محیطی (مثلاً `.env`)، آن‌ها را طبق نیاز تنظیم کنید.
+If there are any environment configurations (like a `.env` file), set them up as needed.
 
-### 5. مهاجرت پایگاه داده
+### 5. Database Migrations
 
-برای ایجاد جداول پایگاه داده، دستورات مهاجرت را اجرا کنید:
+To create database tables, run the migration commands:
 
 ```bash
 python manage.py migrate
 ```
 
-### 6. اجرای سرور توسعه
+### 6. Run the Development Server
 
-پروژه را با دستور زیر اجرا کنید:
+Start the project with the following command:
 
 ```bash
 python manage.py runserver
 ```
 
-پروژه در حال حاضر در آدرس [http://localhost:8000](http://localhost:8000) در دسترس است.
+The project is now accessible at [http://localhost:8000](http://localhost:8000).
 
-## تست‌ها
+## Tests
 
-برای اجرای تست‌ها از دستور زیر استفاده کنید:
+To run the tests, use the following command:
 
 ```bash
 python manage.py test
 ```
 
-## نکات اضافی
+## Additional Notes
 
-- **ایجاد سوپریوزر**: برای ایجاد حساب کاربری مدیر، از دستور زیر استفاده کنید:
+- **Create a Superuser**: To create an admin account, use the command:
   ```bash
   python manage.py createsuperuser
   ```
 
-- **پشتیبانی از GraphQL**: این پروژه شامل قابلیت‌های GraphQL نیز می‌باشد و می‌توانید از طریق آدرس `/graphql` به آن دسترسی داشته باشید.
+- **GraphQL Support**: This project includes GraphQL capabilities, which can be accessed at `/graphql`.
