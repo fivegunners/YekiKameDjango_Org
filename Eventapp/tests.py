@@ -19,28 +19,40 @@ class EventSchemaTests(TestCase):
             title="Event in Tehran",
             event_category="education",
             city="تهران",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634780",
+            registration_start_date=datetime.now(),
+            registration_end_date=datetime.now() + timedelta(days=1),
             max_subscribers=100,
             start_date=datetime.now(),
             end_date=datetime.now() + timedelta(days=1),
-            created_by=cls.user
+            event_owner=cls.user
         )
         Event.objects.create(
             title="Event in Mashhad",
             event_category="sport",
             city="مشهد",
+            postal_address="مشهد، خیابان امام رضا (ع)",
+            postal_code="4871592630",
+            registration_start_date=datetime.now(),
+            registration_end_date=datetime.now() + timedelta(days=1),
             max_subscribers=50,
             start_date=datetime.now(),
             end_date=datetime.now() + timedelta(days=1),
-            created_by=cls.user
+            event_owner=cls.user
         )
         Event.objects.create(
             title="Event in Shiraz",
             event_category="game",
             city="شیراز",
+            postal_address="شیراز، بلوار حافظ",
+            postal_code="2631598470",
+            registration_start_date=datetime.now(),
+            registration_end_date=datetime.now() + timedelta(days=1),
             max_subscribers=80,
             start_date=datetime.now(),
             end_date=datetime.now() + timedelta(days=1),
-            created_by=cls.user
+            event_owner=cls.user
         )
 
     def setUp(self):

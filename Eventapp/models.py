@@ -16,12 +16,16 @@ class Event(models.Model):
     image = models.ImageField(upload_to='event_images/', null=True, blank=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    province = models.CharField(max_length=100) #استان
-    city = models.CharField(max_length=100)
+    province = models.CharField(max_length=100, default='تهران')
+    city = models.CharField(max_length=100, default='تهران')
     neighborhood = models.CharField(max_length=100, null=True, blank=True)
+    postal_address = models.CharField(max_length=255, null=True, blank=True)  # آدرس پستی
+    postal_code = models.CharField(max_length=20, null=True, blank=True)  # کد پستی
+    registration_start_date = models.DateTimeField(null=True, blank=True)  # تاریخ شروع ثبت نام
+    registration_end_date = models.DateTimeField(null=True, blank=True)  # تاریخ پایان ثبت نام
     full_description = models.TextField()
     max_subscribers = models.PositiveIntegerField()
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')
+    event_owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')
     subscribers = models.ManyToManyField(User, through='UserEventRole', related_name='joined_events')
 
     def __str__(self):
