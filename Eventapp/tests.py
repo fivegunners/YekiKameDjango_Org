@@ -1,5 +1,3 @@
-# Eventapp/tests.py
-
 from django.test import TestCase
 from graphene.test import Client
 from .schema import schema
@@ -67,6 +65,8 @@ class EventSchemaTests(TestCase):
                 title
                 eventCategory
                 city
+                postalAddress
+                postalCode
             }
         }
         '''
@@ -76,6 +76,8 @@ class EventSchemaTests(TestCase):
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["title"], "Event in Tehran")
         self.assertEqual(data[0]["city"], "تهران")
+        self.assertEqual(data[0]["postalAddress"], "تهرانپارس، خیابان ۱۷۴ غربی")
+        self.assertEqual(data[0]["postalCode"], "1592634780")
 
     def test_recent_events(self):
         # تست کوئری برای دریافت رویدادهای اخیر
@@ -85,16 +87,13 @@ class EventSchemaTests(TestCase):
                 title
                 eventCategory
                 subscriberCount
+                neighborhood
+                postalAddress
+                postalCode
             }
         }
         '''
         response = self.client.execute(query)
-
-        # اضافه کردن بررسی برای خطاها
-        if "errors" in response:
-            print("GraphQL Errors:", response["errors"])
-
-        # سپس ادامه کد
         data = response.get("data", {}).get("recentEvents")
 
         # بررسی اینکه recentEvents داده‌ای دارد
@@ -104,4 +103,51 @@ class EventSchemaTests(TestCase):
         self.assertGreaterEqual(len(data), 3)
         self.assertEqual(data[0]["title"], "Event in Shiraz")
         self.assertIn("subscriberCount", data[0])
+        self.assertIn("postalAddress", data[0])
+        self.assertIn("postalCode", data[0])
 
+    def test_create_event_mutation(self):
+        # تست Mutation برای ایجاد رویداد جدید
+        mutation = '''
+        mutation {
+            createEvent(
+                title: "New Event",
+                eventCategory: "entertainment",
+                aboutEvent: "A new entertainment event.",
+                startDate: "2024-12-01T09:00:00Z",
+                endDate: "2024-12-01T17:00:00Z",
+                registrationStartDate: "2024-11-01T09:00:00Z",
+                registrationEndDate: "2024-11-25T17:00:00Z",
+                province: "تهران",
+                city: "تهران",
+                neighborhood: "District 1",
+                postalAddress: "Some Street, Tehran",
+                postalCode: "1234567890",
+                maxSubscribers: 150,
+                eventOwnerPhone: "09123456789"
+            ) {
+                event {
+                    id
+                    title
+                    eventCategory
+                    neighborhood
+                    postalAddress
+                    postalCode
+                    maxSubscribers
+                }
+            }
+        }
+        '''
+        response = self.client.execute(mutation)
+        event_data = response.get("data", {}).get("createEvent", {}).get("event")
+
+        # بررسی اینکه event_data خالی نیست
+        self.assertIsNotNone(event_data, "The createEvent mutation returned None")
+
+        # بررسی محتوای رویداد ایجاد شده
+        self.assertEqual(event_data["title"], "New Event")
+        self.assertEqual(event_data["eventCategory"], "ENTERTAINMENT")
+        self.assertEqual(event_data["neighborhood"], "District 1")
+        self.assertEqual(event_data["postalAddress"], "Some Street, Tehran")
+        self.assertEqual(event_data["postalCode"], "1234567890")
+        self.assertEqual(event_data["maxSubscribers"], 150)
