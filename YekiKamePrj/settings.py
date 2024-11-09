@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'django-insecure-y50j*)hrzriga5nih9ef#x=u40aq8g$sw(u=*t$h+=$d+7kj-w
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -39,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    #My Apps
+    # My Apps
     'userapp',
     'Eventapp',
     'Support'
@@ -76,7 +74,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'YekiKamePrj.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -87,10 +84,9 @@ DATABASES = {
         'USER': 'postgres',
         'PASSWORD': '403723807',
         'HOST': 'localhost',  # یا آدرس IP سرور پایگاه داده
-        'PORT': '',           # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
+        'PORT': '',  # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -124,7 +120,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
@@ -137,3 +132,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_media/')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

@@ -1,9 +1,11 @@
 from django.test import TestCase
 from graphene.test import Client
 from .schema import schema
-from .models import FAQ
+from .models import FAQ, ContactUs
 from userapp.models import User
 from datetime import datetime
+from django.core import mail
+from django.utils import timezone
 
 
 class FAQQueryTest(TestCase):
@@ -42,3 +44,53 @@ class FAQQueryTest(TestCase):
         self.assertEqual(data[0]["questionAnswer"], "A query language for APIs.")
         self.assertEqual(data[1]["questionTitle"], "What is Django?")
         self.assertEqual(data[1]["questionAnswer"], "A high-level Python web framework.")
+
+
+class ContactUsMutationTest(TestCase):
+    def setUp(self):
+        # تنظیم کلاینت برای اجرای کوئری‌ها
+        self.client = Client(schema)
+
+    def test_create_contact_us_mutation(self):
+        # تعریف زمان فعلی برای بررسی فیلد created_at
+        current_time = timezone.now()
+
+        # Mutation برای افزودن ContactUs جدید
+        mutation = '''
+        mutation {
+            createContactUs(fullName: "Ali Ahmadi", email: "user@example.com", subject: "Inquiry", message: "Please contact me") {
+                contact {
+                    fullName
+                    email
+                    subject
+                    message
+                    createdAt
+                }
+            }
+        }
+        '''
+        # اجرای Mutation
+        response = self.client.execute(mutation)
+
+        # چک کردن داده‌های بازگشتی
+        contact_data = response.get("data").get("createContactUs").get("contact")
+        self.assertEqual(contact_data["fullName"], "Ali Ahmadi")
+        self.assertEqual(contact_data["email"], "user@example.com")
+        self.assertEqual(contact_data["subject"], "Inquiry")
+        self.assertEqual(contact_data["message"], "Please contact me")
+
+        # بررسی رکورد در دیتابیس
+        contact = ContactUs.objects.get(email="user@example.com")
+        self.assertEqual(contact.full_name, "Ali Ahmadi")
+        self.assertEqual(contact.subject, "Inquiry")
+        self.assertEqual(contact.message, "Please contact me")
+
+        # بررسی زمان created_at
+        self.assertTrue(abs((contact.created_at - current_time).total_seconds()) < 5)
+
+        # چک کردن اینکه ایمیل به درستی ارسال شده باشد
+        self.assertEqual(len(mail.outbox), 1)
+        sent_mail = mail.outbox[0]
+        self.assertEqual(sent_mail.subject, "Ali Ahmadi - Inquiry")
+        self.assertEqual(sent_mail.body, "Please contact me")
+        self.assertEqual(sent_mail.to, ["aliahmadi79sh@gmail.com"])

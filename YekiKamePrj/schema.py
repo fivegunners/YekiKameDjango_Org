@@ -6,7 +6,7 @@ import Support.schema  # اضافه کردن schema اپلیکیشن Support
 class Query(userapp.schema.Query, Eventapp.schema.Query, Support.schema.Query, graphene.ObjectType):
     pass
 
-class Mutation(userapp.schema.Mutation, graphene.ObjectType):
+class Mutation(userapp.schema.Mutation,Support.schema.Mutation, graphene.ObjectType):
     pass
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
