@@ -8,7 +8,7 @@
 
 ## Project Setup
 
-### 1. Clone the Repository
+### 1. Clone The Repository
 
 First, clone the project:
 
