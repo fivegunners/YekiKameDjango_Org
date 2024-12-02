@@ -77,38 +77,16 @@ WSGI_APPLICATION = 'YekiKamePrj.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('POSTGRES_DB', 'db'),
-#         'USER': os.getenv('POSTGRES_USER', 'postgres'),
-#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', '403723807'),
-#         'HOST': os.getenv('DB_HOST', 'db'),
-#         'PORT': os.getenv('DB_PORT', '5432'),
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Yekikame',
         'USER': 'postgres',
         'PASSWORD': '403723807',
-        'HOST': 'db',  # یا آدرس IP سرور پایگاه داده
-        'PORT': '5432',  # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
+        'HOST': 'localhost',  # یا آدرس IP سرور پایگاه داده
+        'PORT': '',  # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
     }
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'db',  # Match POSTGRES_DB in docker-compose.yml
-#         'USER': 'user',  # Match POSTGRES_USER
-#         'PASSWORD': 'password',  # Match POSTGRES_PASSWORD
-#         'HOST': 'db',  # Match the service name in docker-compose.yml
-#         'PORT': 5432,
-#     }
-# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
