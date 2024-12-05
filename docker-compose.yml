@@ -8,6 +8,8 @@ services:
     depends_on:
       - db
     environment:
+      - DJANGO_LOG_LEVEL=DEBUG
+      - DJANGO_LOG_FILE=/logs/django.log #logs address 
       - DEBUG=1
       - DB_NAME=Yekikame
       - DB_USER=postgres
