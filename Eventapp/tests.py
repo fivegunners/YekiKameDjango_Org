@@ -62,6 +62,7 @@ class EventSchemaTests(TestCase):
         query = '''
         query {
             searchEventsByCity(city: "تهران") {
+                id
                 title
                 eventCategory
                 city
@@ -73,6 +74,8 @@ class EventSchemaTests(TestCase):
         response = self.client.execute(query)
         data = response.get("data").get("searchEventsByCity")
 
+        self.assertIsNotNone(data[0]["id"], "ID should not be None")
+        self.assertNotEqual(data[0]["id"], "", "ID should not be empty")
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["title"], "Event in Tehran")
         self.assertEqual(data[0]["city"], "تهران")
@@ -84,6 +87,7 @@ class EventSchemaTests(TestCase):
         query = '''
         query {
             recentEvents {
+                id
                 title
                 eventCategory
                 subscriberCount
@@ -101,6 +105,8 @@ class EventSchemaTests(TestCase):
 
         # بررسی تعداد رویدادهای برگردانده شده
         self.assertGreaterEqual(len(data), 3)
+        self.assertIsNotNone(data[0]["id"], "ID should not be None")
+        self.assertNotEqual(data[0]["id"], "", "ID should not be empty")
         self.assertEqual(data[0]["title"], "Event in Shiraz")
         self.assertIn("subscriberCount", data[0])
         self.assertIn("postalAddress", data[0])
