@@ -44,6 +44,10 @@ If there are any environment configurations (like a `.env` file), set them up as
 To create database tables, run the migration commands:
 
 ```bash
+python manage.py makemigrations
+```
+
+```bash
 python manage.py migrate
 ```
 
@@ -65,6 +69,12 @@ To run the tests, use the following command:
 python manage.py test
 ```
 
+To run the the specifics tests, use the following command:
+
+```bash
+python manage.py test Eventapp.tests
+```
+
 ## Additional Notes
 
 - **Create a Superuser**: To create an admin account, use the command:
@@ -72,4 +82,4 @@ python manage.py test
   python manage.py createsuperuser
   ```
 
-- **GraphQL Support**: This project includes GraphQL capabilities, which can be accessed at `/graphql`.
+- **GraphQL Support**: This project includes GraphQL capabilities, which can be accessed at `/graphql/`.
