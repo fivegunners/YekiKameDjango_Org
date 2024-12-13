@@ -13,6 +13,7 @@ This document provides examples of how to interact with the GraphQL API for even
 ```graphql
 query {
     searchEventsByCity(city: "تهران") {
+        id
         title
         eventCategory
         city
@@ -28,6 +29,7 @@ query {
     "data": {
         "searchEventsByCity": [
             {
+                "id": 5,
                 "title": "Event in Tehran",
                 "eventCategory": "education",
                 "city": "تهران",
@@ -45,6 +47,7 @@ query {
 ```graphql
 query {
     recentEvents {
+        id
         title
         eventCategory
         subscriberCount
@@ -61,6 +64,7 @@ query {
     "data": {
         "recentEvents": [
             {
+                "id": 1,
                 "title": "Event in Shiraz",
                 "eventCategory": "game",
                 "subscriberCount": 80,
@@ -69,6 +73,7 @@ query {
                 "postalCode": "2631598470"
             },
             {
+                "id": 2,
                 "title": "Event in Mashhad",
                 "eventCategory": "sport",
                 "subscriberCount": 50,
@@ -77,6 +82,7 @@ query {
                 "postalCode": "4871592630"
             },
             {
+                "id": 3,
                 "title": "Event in Tehran",
                 "eventCategory": "education",
                 "subscriberCount": 100,
@@ -115,7 +121,6 @@ mutation {
         eventOwnerPhone: "09123456789"
     ) {
         event {
-            id
             title
             eventCategory
             neighborhood
@@ -133,7 +138,6 @@ mutation {
     "data": {
         "createEvent": {
             "event": {
-                "id": "5",
                 "title": "New Event",
                 "eventCategory": "entertainment",
                 "neighborhood": "District 1",
