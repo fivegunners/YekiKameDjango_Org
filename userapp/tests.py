@@ -64,6 +64,7 @@ class UserMutationsTest(TestCase):
         ''' % (self.phone, self.password))
 
         self.assertTrue(response['data']['loginUser']['success'])
+        print(response)
 
     def test_request_login_otp(self):
         # تست درخواست OTP برای لاگین

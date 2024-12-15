@@ -146,7 +146,7 @@ class EventSchemaTests(TestCase):
         '''
         response = self.client.execute(mutation)
         event_data = response.get("data", {}).get("createEvent", {}).get("event")
-
+        print(response)
         # بررسی اینکه event_data خالی نیست
         self.assertIsNotNone(event_data, "The createEvent mutation returned None")
 

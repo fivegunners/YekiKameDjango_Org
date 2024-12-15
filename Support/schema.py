@@ -1,7 +1,8 @@
 import graphene
 from graphene_django.types import DjangoObjectType
-from .models import FAQ, ContactUs
+from .models import FAQ, ContactUs, Ticket, TicketMessage
 from django.core.mail import send_mail
+from userapp.models import User
 
 
 class FAQType(DjangoObjectType):
@@ -53,8 +54,44 @@ class CreateContactUs(graphene.Mutation):
         return CreateContactUs(contact=contact)
 
 
+class TicketType(DjangoObjectType):
+    class Meta:
+        model = Ticket
+        fields = "__all__"
+
+
+# تعریف Mutation برای ایجاد تیکت
+class CreateTicket(graphene.Mutation):
+    ticket = graphene.Field(TicketType)
+
+    class Arguments:
+        title = graphene.String(required=True)
+        content = graphene.String(required=True)
+        department = graphene.String(required=True)
+        priority = graphene.String(default_value='medium')
+        status = graphene.String(default_value='waiting')
+        phone = graphene.String(required=True)  # تغییر از created_by_id به phone
+
+    def mutate(self, info, title, content, department, priority, status, phone):
+        # بررسی کاربر بر اساس شماره تلفن
+        created_by = User.objects.get(phone=phone)
+
+        # ایجاد تیکت جدید
+        ticket = Ticket.objects.create(
+            title=title,
+            content=content,
+            department=department,
+            priority=priority,
+            status=status,
+            created_by=created_by
+        )
+
+        return CreateTicket(ticket=ticket)
+
+
 class Mutation(graphene.ObjectType):
     create_contact_us = CreateContactUs.Field()
+    create_ticket = CreateTicket.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

@@ -94,3 +94,60 @@ class ContactUsMutationTest(TestCase):
         self.assertEqual(sent_mail.subject, "Ali Ahmadi - Inquiry")
         self.assertEqual(sent_mail.body, "Please contact me")
         self.assertEqual(sent_mail.to, ["aliahmadi79sh@gmail.com"])
+
+
+class CreateTicketTestCase(TestCase):
+    def setUp(self):
+
+        self.client = Client(schema)
+        # ایجاد یک کاربر تست
+        self.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+
+        self.user.fullname = "John Doe"
+        self.user.email = "johndoe@gmail.com"
+        self.user.save()
+
+    def test_create_ticket(self):
+        # داده‌هایی که برای ایجاد تیکت استفاده می‌کنیم
+        mutation = '''
+            mutation {
+                createTicket(
+                    title: "عنوان تیکت جدید",
+                    content: "متن تیکت",
+                    department: "technical",
+                    priority: "high",
+                    status: "waiting",
+                    phone: "09123456789"
+                ) {
+                    ticket {
+                        id
+                        title
+                        content
+                        department
+                        priority
+                        status
+                    }
+                }
+            }
+        '''
+
+        # ارسال درخواست GraphQL
+        response = self.client.execute(mutation)
+        print(response)
+
+        ticket_data = response.get("data", {}).get("createTicket", {}).get("ticket")
+
+        self.assertIsNotNone(ticket_data, "The createTicket mutation returned None")
+
+        self.assertEqual(ticket_data['title'], "عنوان تیکت جدید")
+        self.assertEqual(ticket_data['content'], "متن تیکت")
+        self.assertEqual(ticket_data['department'], "TECHNICAL")
+        self.assertEqual(ticket_data['priority'], "HIGH")
+        self.assertEqual(ticket_data['status'], "WAITING")
+
+    def tearDown(self):
+        # پاکسازی داده‌ها پس از تست
+        self.user.delete()
