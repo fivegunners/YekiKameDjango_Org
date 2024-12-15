@@ -2,6 +2,8 @@ import random
 from django.core.cache import cache
 import graphene
 from .models import User
+from django.contrib.auth.hashers import check_password
+from graphene_django.types import DjangoObjectType
 
 
 class RegisterUser(graphene.Mutation):
@@ -99,3 +101,65 @@ class VerifyLoginOTP(graphene.Mutation):
             except User.DoesNotExist:
                 return VerifyLoginOTP(success=False)
         return VerifyLoginOTP(success=False)
+
+
+class UserType(DjangoObjectType):
+    class Meta:
+        model = User
+
+class UpdateEmailMutation(graphene.Mutation):
+    class Arguments:
+        phone = graphene.String(required=True)
+        email = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, phone, email):
+        try:
+            user = User.objects.get(phone=phone)
+            user.email = email
+            user.save()
+            return UpdateEmailMutation(success=True, message="Email updated successfully.")
+        except User.DoesNotExist:
+            return UpdateEmailMutation(success=False, message="User with the provided phone number was not found.")
+
+
+class UpdateFullnameMutation(graphene.Mutation):
+    class Arguments:
+        phone = graphene.String(required=True)
+        fullname = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, phone, fullname):
+        try:
+            user = User.objects.get(phone=phone)
+            user.fullname = fullname
+            user.save()
+            return UpdateFullnameMutation(success=True, message="Fullname updated successfully.")
+        except User.DoesNotExist:
+            return UpdateFullnameMutation(success=False, message="User with the provided phone number was not found.")
+
+
+class UpdatePasswordMutation(graphene.Mutation):
+    class Arguments:
+        phone = graphene.String(required=True)
+        old_password = graphene.String(required=True)
+        new_password = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, phone, old_password, new_password):
+        try:
+            user = User.objects.get(phone=phone)
+            if check_password(old_password, user.password):
+                user.set_password(new_password)
+                user.save()
+                return UpdatePasswordMutation(success=True, message="Password updated successfully.")
+            else:
+                return UpdatePasswordMutation(success=False, message="Old password is incorrect.")
+        except User.DoesNotExist:
+            return UpdatePasswordMutation(success=False, message="User not found.")

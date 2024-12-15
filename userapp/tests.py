@@ -148,3 +148,75 @@ class UserQueryTestCase(TestCase):
     def tearDown(self):
         # پاکسازی داده‌ها پس از تست
         self.user.delete()
+
+
+class UpdateUserInfoTests(TestCase):
+    def setUp(self):
+        # ایجاد نمونه کاربر تستی
+        self.user = User.objects.create_user(phone="09123456789", password="oldpassword")
+        self.user.fullname = "Amir Salemi"
+        self.user.email = "AmirSalemi@example.com"
+        self.user.is_active = True
+        self.user.is_admin = False
+        self.user.save()
+        self.client = Client(schema)
+
+    def test_update_email(self):
+        mutation = """
+        mutation {
+            updateEmail(phone: "09123456789", email: "newemail@example.com") {
+                success
+                message
+            }
+        }
+        """
+        response = self.client.execute(mutation)
+        print(response)
+        data = response.get("data").get("updateEmail").get("success")
+
+        # بررسی موفقیت‌آمیز بودن عملیات
+        self.assertTrue(data)
+
+        # بررسی تغییر ایمیل در دیتابیس
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, "newemail@example.com")
+
+    def test_update_fullname(self):
+        mutation = """
+        mutation {
+            updateFullname(phone: "09123456789", fullname: "Ali Ahmadi") {
+                success
+                message
+            }
+        }
+        """
+        response = self.client.execute(mutation)
+        print(response)
+        data = response.get("data").get("updateFullname").get("success")
+
+        # بررسی موفقیت‌آمیز بودن عملیات
+        self.assertTrue(data)
+
+        # بررسی تغییر نام کامل در دیتابیس
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.fullname, "Ali Ahmadi")
+
+    def test_update_password(self):
+        mutation = """
+        mutation {
+            updatePassword(phone: "09123456789", oldPassword: "oldpassword", newPassword: "newpassword123") {
+                success
+                message
+            }
+        }
+        """
+        response = self.client.execute(mutation)
+        print(response)
+        data = response.get("data").get("updatePassword").get("success")
+
+        # بررسی موفقیت‌آمیز بودن عملیات
+        self.assertTrue(data)
+
+        # بررسی تغییر رمز عبور در دیتابیس
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("newpassword123"))
