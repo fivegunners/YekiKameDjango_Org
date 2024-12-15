@@ -10,11 +10,6 @@ class EventType(DjangoObjectType):
 
     class Meta:
         model = Event
-        fields = (
-            "id", "title", "event_category", "about_event", "start_date", "end_date",
-            "city", "province", "neighborhood", "postal_address", "postal_code",
-            "max_subscribers", "event_owner", "subscribers"
-        )
 
     def resolve_subscriber_count(self, info):
         # برگرداندن تعداد مشترکین از تعداد مرتبطین با فیلد subscribers
@@ -29,7 +24,7 @@ class Query(graphene.ObjectType):
         return Event.objects.filter(city=city)
 
     def resolve_recent_events(self, info):
-        return Event.objects.annotate(subscriber_count=Count('subscribers')).order_by('-id')[:20]
+        return Event.objects.annotate(subscriber_count=Count('subscribers')).order_by('-id')[:10]
 
 
 class CreateEvent(graphene.Mutation):

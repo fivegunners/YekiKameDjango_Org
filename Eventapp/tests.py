@@ -24,6 +24,7 @@ class EventSchemaTests(TestCase):
             max_subscribers=100,
             start_date=datetime.now(),
             end_date=datetime.now() + timedelta(days=1),
+            neighborhood="تهرانپارس",
             event_owner=cls.user
         )
         Event.objects.create(
@@ -65,22 +66,24 @@ class EventSchemaTests(TestCase):
                 id
                 title
                 eventCategory
-                city
-                postalAddress
-                postalCode
+                subscriberCount
+                startDate
+                neighborhood
             }
         }
         '''
         response = self.client.execute(query)
         data = response.get("data").get("searchEventsByCity")
+        print(data)
 
         self.assertIsNotNone(data[0]["id"], "ID should not be None")
         self.assertNotEqual(data[0]["id"], "", "ID should not be empty")
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["title"], "Event in Tehran")
-        self.assertEqual(data[0]["city"], "تهران")
-        self.assertEqual(data[0]["postalAddress"], "تهرانپارس، خیابان ۱۷۴ غربی")
-        self.assertEqual(data[0]["postalCode"], "1592634780")
+        self.assertEqual(data[0]["eventCategory"], "EDUCATION")
+        self.assertEqual(data[0]["neighborhood"], "تهرانپارس")
+        self.assertIn("subscriberCount", data[0])
+        self.assertIn("startDate", data[0])
 
     def test_recent_events(self):
         # تست کوئری برای دریافت رویدادهای اخیر
@@ -91,14 +94,15 @@ class EventSchemaTests(TestCase):
                 title
                 eventCategory
                 subscriberCount
+                startDate
                 neighborhood
-                postalAddress
-                postalCode
             }
         }
         '''
         response = self.client.execute(query)
-        data = response.get("data", {}).get("recentEvents")
+        #print(response)
+        data = response.get("data", {}).get("recentEvents", {})
+        #print(data)
 
         # بررسی اینکه recentEvents داده‌ای دارد
         self.assertIsNotNone(data, "The recentEvents query returned None")
@@ -109,8 +113,9 @@ class EventSchemaTests(TestCase):
         self.assertNotEqual(data[0]["id"], "", "ID should not be empty")
         self.assertEqual(data[0]["title"], "Event in Shiraz")
         self.assertIn("subscriberCount", data[0])
-        self.assertIn("postalAddress", data[0])
-        self.assertIn("postalCode", data[0])
+        self.assertIn("startDate", data[0])
+        self.assertIn("neighborhood", data[0])
+        self.assertIn("eventCategory", data[0])
 
     def test_create_event_mutation(self):
         # تست Mutation برای ایجاد رویداد جدید
@@ -136,17 +141,16 @@ class EventSchemaTests(TestCase):
                     id
                     title
                     eventCategory
-                    neighborhood
-                    postalAddress
-                    postalCode
                     maxSubscribers
+                    startDate
+                    neighborhood
                 }
             }
         }
         '''
         response = self.client.execute(mutation)
         event_data = response.get("data", {}).get("createEvent", {}).get("event")
-        print(response)
+
         # بررسی اینکه event_data خالی نیست
         self.assertIsNotNone(event_data, "The createEvent mutation returned None")
 
@@ -154,6 +158,5 @@ class EventSchemaTests(TestCase):
         self.assertEqual(event_data["title"], "New Event")
         self.assertEqual(event_data["eventCategory"], "ENTERTAINMENT")
         self.assertEqual(event_data["neighborhood"], "District 1")
-        self.assertEqual(event_data["postalAddress"], "Some Street, Tehran")
-        self.assertEqual(event_data["postalCode"], "1234567890")
+        self.assertEqual(event_data["startDate"], "2024-12-01T09:00:00+00:00")
         self.assertEqual(event_data["maxSubscribers"], 150)
