@@ -97,3 +97,54 @@ class UserMutationsTest(TestCase):
         ''' % self.phone)
 
         self.assertTrue(response['data']['verifyLoginOtp']['success'])
+
+
+class UserQueryTestCase(TestCase):
+    def setUp(self):
+
+        self.client = Client(schema)
+        # ایجاد یک کاربر تست
+        self.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+        self.user.fullname = "John Doe"
+        self.user.email = "johndoe@example.com"
+        self.user.is_active = True
+        self.user.is_admin = False
+        self.user.save()
+
+    def test_user_query(self):
+        # تعریف Query برای کاربر خاص
+        query = '''
+            query {
+                user(phone: "09123456789") {
+                    id
+                    phone
+                    email
+                    fullname
+                    isActive
+                    isAdmin
+                }
+            }
+        '''
+
+        response = self.client.execute(query)
+
+        # بررسی صحت پاسخ
+        print(response)
+
+        # استخراج داده‌های پاسخ
+        user_data = response.get("data").get("user")
+
+        # بررسی اطلاعات کاربر
+        self.assertIsNotNone(user_data)
+        self.assertEqual(user_data['phone'], "09123456789")
+        self.assertEqual(user_data['email'], "johndoe@example.com")
+        self.assertEqual(user_data['fullname'], "John Doe")
+        self.assertEqual(user_data['isActive'], True)
+        self.assertEqual(user_data['isAdmin'], False)
+
+    def tearDown(self):
+        # پاکسازی داده‌ها پس از تست
+        self.user.delete()

@@ -1,13 +1,23 @@
 import graphene
 from .mutations import RegisterUser, VerifyOTP, LoginUser, RequestLoginOTP, VerifyLoginOTP
+from userapp.models import User
+from graphene_django.types import DjangoObjectType
 
 
-class UserQuery(graphene.ObjectType):
-    hello = graphene.String(default_value="Hello, world!")
+class UserType(DjangoObjectType):
+    class Meta:
+        model = User
+        exclude = ("password",)  # حذف فیلد password
 
 
-class Query(UserQuery, graphene.ObjectType):
-    pass
+class Query(graphene.ObjectType):
+    user = graphene.Field(UserType, phone=graphene.String(required=True))
+
+    def resolve_user(self, info, phone):
+        try:
+            return User.objects.get(phone=phone)
+        except User.DoesNotExist:
+            return None
 
 
 class Mutation(graphene.ObjectType):
