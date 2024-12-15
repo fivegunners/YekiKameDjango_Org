@@ -16,9 +16,9 @@ query {
         id
         title
         eventCategory
-        city
-        postalAddress
-        postalCode
+        subscriberCount
+        startDate
+        neighborhood
     }
 }
 ```
@@ -32,9 +32,9 @@ query {
                 "id": 5,
                 "title": "Event in Tehran",
                 "eventCategory": "education",
-                "city": "تهران",
-                "postalAddress": "تهرانپارس، خیابان ۱۷۴ غربی",
-                "postalCode": "1592634780"
+                "neighborhood": "تهرانپارس",
+                "subscriberCount": 20,
+                "startDate": "2024-12-01T09:00:00+00"
             }
         ]
     }
@@ -51,9 +51,8 @@ query {
         title
         eventCategory
         subscriberCount
+        startDate
         neighborhood
-        postalAddress
-        postalCode
     }
 }
 ```
@@ -69,8 +68,7 @@ query {
                 "eventCategory": "game",
                 "subscriberCount": 80,
                 "neighborhood": "بلوار حافظ",
-                "postalAddress": "شیراز، بلوار حافظ",
-                "postalCode": "2631598470"
+                "startDate": "2024-12-01T09:00:00+00"
             },
             {
                 "id": 2,
@@ -78,17 +76,15 @@ query {
                 "eventCategory": "sport",
                 "subscriberCount": 50,
                 "neighborhood": "خیابان امام رضا (ع)",
-                "postalAddress": "مشهد، خیابان امام رضا (ع)",
-                "postalCode": "4871592630"
+                "startDate": "2024-12-01T09:00:00+00"
             },
             {
                 "id": 3,
                 "title": "Event in Tehran",
                 "eventCategory": "education",
-                "subscriberCount": 100,
                 "neighborhood": "تهرانپارس",
-                "postalAddress": "تهرانپارس، خیابان ۱۷۴ غربی",
-                "postalCode": "1592634780"
+                "subscriberCount": 20,
+                "startDate": "2024-12-01T09:00:00+00"
             }
         ]
     }
