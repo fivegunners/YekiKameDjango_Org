@@ -1,7 +1,7 @@
 import graphene
 from django.db.models import Count
 from graphene_django.types import DjangoObjectType
-from .models import Event
+from .models import Event, Review, Comment, EventFeature, UserEventRole
 from userapp.models import User
 
 
@@ -83,8 +83,81 @@ class CreateEvent(graphene.Mutation):
         return CreateEvent(event=event)
 
 
+class ReviewType(DjangoObjectType):
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+
+class CommentType(DjangoObjectType):
+    class Meta:
+        model = Comment
+        fields = '__all__'
+
+
+class CreateReview(graphene.Mutation):
+    class Arguments:
+        event_id = graphene.ID(required=True)
+        user_id = graphene.ID(required=True)
+        rating = graphene.Int(required=True)
+        comment_text = graphene.String(required=True)
+
+    review = graphene.Field(ReviewType)
+
+    def mutate(self, info, event_id, user_id, rating, comment_text):
+        event = Event.objects.get(id=event_id)
+        user = User.objects.get(id=user_id)
+
+        review = Review.objects.create(
+            event=event,
+            user=user,
+            rating=rating,
+            comment_text=comment_text
+        )
+
+        return CreateReview(review=review)
+
+
+class CreateComment(graphene.Mutation):
+    class Arguments:
+        review_id = graphene.ID(required=True)
+        user_id = graphene.ID(required=True)
+        comment_text = graphene.String(required=True)
+        parent_comment_id = graphene.ID()  # برای ریپلای به یک کامنت (اختیاری)
+        is_active = graphene.Boolean(default_value=True)  # فیلد جدید برای فعال بودن یا نبودن کامنت
+
+    comment = graphene.Field(CommentType)
+
+    def mutate(self, info, review_id, user_id, comment_text, parent_comment_id=None, is_active=True):
+        review = Review.objects.get(id=review_id)
+        user = User.objects.get(id=user_id)
+
+        if parent_comment_id:
+            parent_comment = Comment.objects.get(id=parent_comment_id)
+            comment = Comment.objects.create(
+                review=review,
+                user=user,
+                comment_text=comment_text,
+                parent_comment=parent_comment,
+                level=parent_comment.level + 1,
+                is_active=is_active
+            )
+        else:
+            comment = Comment.objects.create(
+                review=review,
+                user=user,
+                comment_text=comment_text,
+                level=1,  # اولین سطح کامنت
+                is_active=is_active
+            )
+
+        return CreateComment(comment=comment)
+
+
 class Mutation(graphene.ObjectType):
     create_event = CreateEvent.Field()
+    create_review = CreateReview.Field()
+    create_comment = CreateComment.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
