@@ -146,6 +146,89 @@ mutation {
 }
 ```
 
+## Review and Comment Mutations
+
+### CreateReview Mutation
+
+The `CreateReview` mutation allows users to create a review for an event. The review includes a rating and a comment text.
+
+#### Request:
+```graphql
+mutation {
+  createReview(eventId: "1", userId: "1", rating: 4.5, commentText: "This is a great event!") {
+    review {
+      id
+      rating
+      commentText
+    }
+  }
+}
+```
+
+#### Response:
+```json
+{
+  "data": {
+    "createReview": {
+      "review": {
+        "id": 1,
+        "rating": 4.5,
+        "commentText": "This is a great event!"
+      }
+    }
+  }
+}
+```
+
+#### Description:
+- `eventId`: The ID of the event for which the review is being created.
+- `userId`: The ID of the user submitting the review.
+- `rating`: A floating-point value representing the rating (from 0 to 5).
+- `commentText`: The text content of the review.
+
+---
+
+### CreateComment Mutation
+
+The `CreateComment` mutation allows users to create a comment for a specific review. It supports replying to existing comments, and the `level` field keeps track of comment replies (with a limit of 3 levels).
+
+#### Request:
+```graphql
+mutation {
+  createComment(reviewId: "1", userId: "1", commentText: "I agree with this review!", isActive: true) {
+    comment {
+      id
+      commentText
+      isActive
+      level
+    }
+  }
+}
+```
+
+#### Response:
+```json
+{
+  "data": {
+    "createComment": {
+      "comment": {
+        "id": 1,
+        "commentText": "I agree with this review!",
+        "isActive": true,
+        "level": 1
+      }
+    }
+  }
+}
+```
+
+#### Description:
+- `reviewId`: The ID of the review to which the comment is being added.
+- `userId`: The ID of the user submitting the comment.
+- `commentText`: The text content of the comment.
+- `isActive`: Indicates whether the comment is active.
+- `level`: The level of the comment (for replies to comments, this increases). The level is restricted to a maximum of 3.
+
 ---
 
 This document provides the necessary information to test and implement the GraphQL API interactions for event management in your project.
