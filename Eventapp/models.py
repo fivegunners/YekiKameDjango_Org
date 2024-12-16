@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from userapp.models import User
 
@@ -74,13 +75,18 @@ class EventFeature(models.Model):
 class Review(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='reviews')  # ارتباط با رویداد
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # ارتباط با کاربر
-    rating = models.PositiveSmallIntegerField(choices=[(i, i) for i in range(1, 6)])  # امتیاز 1 تا 5
     comment_text = models.TextField()  # متن نظر
     created_at = models.DateTimeField(auto_now_add=True)  # زمان ایجاد نظر
     updated_at = models.DateTimeField(auto_now=True)  # زمان بروزرسانی نظر
+    rating = models.FloatField(default=0)
+
+    def clean(self):
+        # اعتبارسنجی که مقدار rating باید بین 0 و 5 باشد
+        if self.rating < 0 or self.rating > 5:
+            raise ValidationError("Rating must be between 0 and 5")
 
     def __str__(self):
-        return f'Review by {self.user.username} for {self.event.title}'
+        return f'Review by {self.user.fullname} for {self.event.title}'
 
 
 class Comment(models.Model):
@@ -94,7 +100,7 @@ class Comment(models.Model):
     is_active = models.BooleanField(default=True)  # فیلد جدید برای فعال یا غیرفعال بودن نظر
 
     def __str__(self):
-        return f'Comment by {self.user.username} on review {self.review.id}'
+        return f'Comment by {self.user.fullname} on review {self.review.id}'
 
     class Meta:
         constraints = [

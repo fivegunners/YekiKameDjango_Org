@@ -1,7 +1,8 @@
+import graphene
 from django.test import TestCase
 from graphene.test import Client
 from .schema import schema
-from .models import Event
+from .models import Event, Review, Comment, UserEventRole, EventFeature
 from datetime import datetime, timedelta
 from userapp.models import User  # اضافه کردن مدل User
 
@@ -74,7 +75,6 @@ class EventSchemaTests(TestCase):
         '''
         response = self.client.execute(query)
         data = response.get("data").get("searchEventsByCity")
-        print(data)
 
         self.assertIsNotNone(data[0]["id"], "ID should not be None")
         self.assertNotEqual(data[0]["id"], "", "ID should not be empty")
@@ -160,3 +160,133 @@ class EventSchemaTests(TestCase):
         self.assertEqual(event_data["neighborhood"], "District 1")
         self.assertEqual(event_data["startDate"], "2024-12-01T09:00:00+00:00")
         self.assertEqual(event_data["maxSubscribers"], 150)
+
+
+class TestReviewAndCommentMutations(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تست
+        cls.user = User.objects.create_user(phone="09123456789", password="password123")
+
+        # ساخت رویداد تست
+        cls.event = Event.objects.create(
+            title="Event in Tehran",
+            event_category="education",
+            city="تهران",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634780",
+            registration_start_date=datetime.now(),
+            registration_end_date=datetime.now() + timedelta(days=1),
+            max_subscribers=100,
+            start_date=datetime.now(),
+            end_date=datetime.now() + timedelta(days=1),
+            neighborhood="تهرانپارس",
+            event_owner=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_create_review_mutation(self):
+        # تعریف Mutation برای ایجاد Review
+        mutation = """
+            mutation {
+                createReview(eventId: "%s", userId: "%s", rating: 4.5, commentText: "This is a great event!") {
+                    review {
+                        id
+                        rating
+                        commentText
+                    }
+                }
+            }
+        """ % (self.event.id, self.user.id)
+
+        # ارسال درخواست به GraphQL
+        response = self.client.execute(mutation)
+        print(response)
+        # استخراج داده‌های پاسخ
+        response_data = response.get("data", {}).get("createReview", {}).get("review")
+        print(response_data)
+        # بررسی پاسخ
+        self.assertIsNotNone(response_data)  # بررسی که داده‌ها برگشت داده شده‌اند
+        self.assertEqual(response_data["rating"], 4.5)
+        self.assertEqual(response_data["commentText"], "This is a great event!")  # بررسی که متن نظر درست است
+
+    def test_create_comment_mutation(self):
+        # ابتدا یک Review برای تست کامنت ایجاد می‌کنیم
+        review = Review.objects.create(
+            event=self.event,
+            user=self.user,
+            rating=5,
+            comment_text="This is a great event!"
+        )
+
+        # تعریف Mutation برای ایجاد Comment
+        mutation = """
+            mutation {
+                createComment(reviewId: "%s", userId: "%s", commentText: "I agree with this review!", isActive: true) {
+                    comment {
+                        id
+                        commentText
+                        isActive
+                        level
+                    }
+                }
+            }
+        """ % (review.id, self.user.id)
+
+        # ارسال درخواست به GraphQL
+        response = self.client.execute(mutation)
+
+        # استخراج داده‌های پاسخ
+        response_data = response.get("data", {}).get("createComment", {}).get("comment")
+
+        # بررسی پاسخ
+        self.assertIsNotNone(response_data)  # بررسی که داده‌ها برگشت داده شده‌اند
+        self.assertEqual(response_data["commentText"], "I agree with this review!")  # بررسی که متن کامنت درست است
+        self.assertTrue(response_data["isActive"])  # بررسی که فیلد isActive درست است
+        self.assertEqual(response_data["level"], 1)  # بررسی که سطح کامنت 1 است (نظر اصلی)
+
+    def test_create_reply_to_comment(self):
+        # ابتدا یک Review برای تست کامنت ایجاد می‌کنیم
+        review = Review.objects.create(
+            event=self.event,
+            user=self.user,
+            rating=5,
+            comment_text="This is a great event!"
+        )
+
+        # ایجاد اولین کامنت
+        comment = Comment.objects.create(
+            review=review,
+            user=self.user,
+            comment_text="First comment",
+            level=1
+        )
+
+        # تعریف Mutation برای ایجاد کامنت به عنوان پاسخ (ریپلای)
+        mutation = """
+            mutation {
+                createComment(reviewId: "%s", userId: "%s", commentText: "This is a reply!", parentCommentId: "%s", isActive: true) {
+                    comment {
+                        id
+                        commentText
+                        isActive
+                        level
+                    }
+                }
+            }
+        """ % (review.id, self.user.id, comment.id)
+
+        # ارسال درخواست به GraphQL
+        response = self.client.execute(mutation)
+
+        # استخراج داده‌های پاسخ
+        response_data = response.get("data", {}).get("createComment", {}).get("comment")
+
+        # بررسی پاسخ
+        self.assertIsNotNone(response_data)  # بررسی که داده‌ها برگشت داده شده‌اند
+        self.assertEqual(response_data["commentText"], "This is a reply!")  # بررسی که متن ریپلای درست است
+        self.assertTrue(response_data["isActive"])  # بررسی که فیلد isActive درست است
+        self.assertEqual(response_data["level"], 2)  # بررسی که سطح ریپلای برابر با ۲ است (پاسخ به نظر اصلی)

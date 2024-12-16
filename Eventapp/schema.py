@@ -99,19 +99,23 @@ class CreateReview(graphene.Mutation):
     class Arguments:
         event_id = graphene.ID(required=True)
         user_id = graphene.ID(required=True)
-        rating = graphene.Int(required=True)
+        rating = graphene.Float(required=True)  # تغییر از Int به Float
         comment_text = graphene.String(required=True)
 
     review = graphene.Field(ReviewType)
 
     def mutate(self, info, event_id, user_id, rating, comment_text):
+        # اطمینان از اینکه مقدار rating بین 0 و 5 است
+        if rating < 0 or rating > 5:
+            raise ValueError("Rating must be between 0 and 5")
+
         event = Event.objects.get(id=event_id)
         user = User.objects.get(id=user_id)
 
         review = Review.objects.create(
             event=event,
             user=user,
-            rating=rating,
+            rating=rating,  # ذخیره به صورت اعشاری در مدل
             comment_text=comment_text
         )
 
