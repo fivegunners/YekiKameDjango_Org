@@ -75,7 +75,7 @@ class EventFeature(models.Model):
 class Review(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='reviews')  # ارتباط با رویداد
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # ارتباط با کاربر
-    comment_text = models.TextField()  # متن نظر
+    comment_text = models.TextField(null=True, blank=True)  # متن نظر
     created_at = models.DateTimeField(auto_now_add=True)  # زمان ایجاد نظر
     updated_at = models.DateTimeField(auto_now=True)  # زمان بروزرسانی نظر
     rating = models.FloatField(default=0)
@@ -97,7 +97,7 @@ class Comment(models.Model):
     comment_text = models.TextField()  # متن پاسخ
     created_at = models.DateTimeField(auto_now_add=True)  # زمان ایجاد پاسخ
     level = models.PositiveIntegerField(default=1)  # سطح نظر (1 برای نظر اصلی, 2 برای اولین پاسخ و ...)
-    is_active = models.BooleanField(default=True)  # فیلد جدید برای فعال یا غیرفعال بودن نظر
+    is_active = models.BooleanField(default=False)  # فیلد جدید برای فعال یا غیرفعال بودن نظر
 
     def __str__(self):
         return f'Comment by {self.user.fullname} on review {self.review.id}'
