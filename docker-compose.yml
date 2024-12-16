@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DJANGO_LOG_LEVEL=DEBUG
+      - DJANGO_LOG_FILE=/logs/django.log #logs address 
+      - DEBUG=1
+      - DB_NAME=Yekikame
+      - DB_USER=postgres
+      - DB_PASSWORD=403723807
+      - DB_HOST=db
+      - DB_PORT=5432
+    command: ./wait-for-it.sh db:5432 -- python manage.py runserver 0.0.0.0:8000
+#      >
+#      sh -c "while ! nc -z db 5432; do
+#      echo 'Waiting for database...'; sleep 1; done;
+#      python manage.py runserver 0.0.0.0:8000"
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "403723807"
+      POSTGRES_DB: Yekikame
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
