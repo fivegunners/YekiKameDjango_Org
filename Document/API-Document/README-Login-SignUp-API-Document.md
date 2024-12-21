@@ -1,4 +1,3 @@
-
 # GraphQL API Interaction Examples
 
 This document provides examples of how to interact with the GraphQL API for user authentication operations including signup, login, and OTP verification. Each example includes the request from the frontend and the expected response from the server.
@@ -36,6 +35,7 @@ mutation {
 mutation {
     verifyOtp(phone: "09120000000", otp: 12345) {
         success
+        token
     }
 }
 ```
@@ -46,7 +46,8 @@ mutation {
 {
     "data": {
         "verifyOtp": {
-            "success": true
+            "success": true,
+            "token": "<session_token>"
         }
     }
 }
@@ -57,7 +58,8 @@ mutation {
 {
     "data": {
         "verifyOtp": {
-            "success": false
+            "success": false,
+            "token": null
         }
     }
 }
@@ -72,6 +74,7 @@ mutation {
 mutation {
     loginUser(phone: "09120000000", password: "mypassword123") {
         success
+        token
     }
 }
 ```
@@ -82,7 +85,8 @@ mutation {
 {
     "data": {
         "loginUser": {
-            "success": true
+            "success": true,
+            "token": "<session_token>"
         }
     }
 }
@@ -93,7 +97,8 @@ mutation {
 {
     "data": {
         "loginUser": {
-            "success": false
+            "success": false,
+            "token": null
         }
     }
 }
@@ -133,6 +138,7 @@ mutation {
 mutation {
     verifyLoginOtp(phone: "09120000000", otp: 54321) {
         success
+        token
     }
 }
 ```
@@ -143,7 +149,8 @@ mutation {
 {
     "data": {
         "verifyLoginOtp": {
-            "success": true
+            "success": true,
+            "token": "<session_token>"
         }
     }
 }
@@ -154,7 +161,8 @@ mutation {
 {
     "data": {
         "verifyLoginOtp": {
-            "success": false
+            "success": false,
+            "token": null
         }
     }
 }
