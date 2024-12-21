@@ -15,10 +15,16 @@ class EventType(DjangoObjectType):
         # برگرداندن تعداد مشترکین از تعداد مرتبطین با فیلد subscribers
         return self.subscribers.count()
 
+class ReviewType(DjangoObjectType):
+    class Meta:
+        model = Review
+        fields = ('id', 'event', 'user', 'rating', 'comment_text', 'created_at')
+
 
 class Query(graphene.ObjectType):
     search_events_by_city = graphene.List(EventType, city=graphene.String(required=True))
     recent_events = graphene.List(EventType)
+    reviews_by_event = graphene.List(ReviewType, event_id=graphene.ID(required=True))
 
     def resolve_search_events_by_city(self, info, city):
         return Event.objects.filter(city=city)
@@ -26,6 +32,8 @@ class Query(graphene.ObjectType):
     def resolve_recent_events(self, info):
         return Event.objects.annotate(subscriber_count=Count('subscribers')).order_by('-start_date', '-id')[:10]
 
+    def resolve_reviews_by_event(self, info, event_id):
+        return Review.objects.filter(event_id=event_id).order_by('-created_at')
 
 class CreateEvent(graphene.Mutation):
     class Arguments:

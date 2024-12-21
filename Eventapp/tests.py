@@ -184,6 +184,19 @@ class TestReviewAndCommentMutations(TestCase):
             neighborhood="تهرانپارس",
             event_owner=cls.user
         )
+        # ساخت چندین Review برای رویداد
+        review1 = Review.objects.create(event=cls.event, user=cls.user, rating=4.3, comment_text="Great event!")
+        review2 = Review.objects.create(event=cls.event, user=cls.user, rating=3.2, comment_text="It was okay.")
+        review3 = Review.objects.create(event=cls.event, user=cls.user, rating=1.0, comment_text="Absolutely Bad!")
+
+        # تنظیم مقادیر created_at به صورت دستی
+        review1.created_at = datetime.now() - timedelta(days=4)
+        review2.created_at = datetime.now() - timedelta(days=2)
+        review3.created_at = datetime.now()
+
+        review1.save()
+        review2.save()
+        review3.save()
 
     def setUp(self):
         # ایجاد یک کلاینت GraphQL
@@ -291,3 +304,27 @@ class TestReviewAndCommentMutations(TestCase):
         self.assertEqual(response_data["commentText"], "This is a reply!")  # بررسی که متن ریپلای درست است
         self.assertTrue(response_data["isActive"])  # بررسی که فیلد isActive درست است
         self.assertEqual(response_data["level"], 2)  # بررسی که سطح ریپلای برابر با ۲ است (پاسخ به نظر اصلی)
+
+    def test_reviews_by_event_query(self):
+        # تست کوئری برای دریافت تمام Reviews مربوط به یک Event
+        query = '''
+        query {
+            reviewsByEvent(eventId: "%s") {
+                id
+                rating
+                commentText
+                createdAt
+            }
+        }
+        ''' % self.event.id
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("reviewsByEvent", [])
+        print(data)
+
+        # بررسی پاسخ
+        self.assertEqual(len(data), 3, "There should be 3 reviews for the event.")
+        self.assertEqual(data[0]["rating"], 1.0, "The first review should have the most recent created_at.")
+        self.assertEqual(data[1]["rating"], 3.2, "The second review should have the middle created_at.")
+        self.assertEqual(data[2]["rating"], 4.3, "The third review should have the oldest created_at.")
+        self.assertIsNotNone(data[0]["createdAt"], "The createdAt field should not be None.")
