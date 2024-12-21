@@ -321,4 +321,89 @@ query {
 }
 ```
 
+## Event Queries
+
+### Fetch Event Details
+
+The `eventDetails` query allows you to fetch all the details of a specific event by its ID.
+
+#### Request:
+```graphql
+query {
+    eventDetails(eventId: "1") {
+        event {
+            id
+            title
+            eventCategory
+            aboutEvent
+            startDate
+            endDate
+            province
+            city
+            neighborhood
+            postalAddress
+            postalCode
+            registrationStartDate
+            registrationEndDate
+            fullDescription
+            maxSubscribers
+            eventOwner {
+                phone
+            }
+        }
+        error
+    }
+}
+```
+
+#### Response (if event exists):
+```json
+{
+    "data": {
+        "eventDetails": {
+            "event": {
+                "id": "1",
+                "title": "Event in Tehran",
+                "eventCategory": "education",
+                "aboutEvent": "This is a detailed description of the event.",
+                "startDate": "2024-12-22T10:00:00+00:00",
+                "endDate": "2024-12-22T18:00:00+00:00",
+                "province": "تهران",
+                "city": "تهران",
+                "neighborhood": "تهرانپارس",
+                "postalAddress": "تهرانپارس، خیابان ۱۷۴ غربی",
+                "postalCode": "1592634780",
+                "registrationStartDate": "2024-12-20T10:00:00+00:00",
+                "registrationEndDate": "2024-12-21T18:00:00+00:00",
+                "fullDescription": "This is the full description of the event.",
+                "maxSubscribers": 100,
+                "eventOwner": {
+                    "phone": "09123456789"
+                }
+            },
+            "error": null
+        }
+    }
+}
+```
+
+#### Response (if event does not exist):
+```json
+{
+    "data": {
+        "eventDetails": {
+            "event": null,
+            "error": "Event does not exist!"
+        }
+    }
+}
+```
+
+#### Description:
+- `eventId`: The ID of the event to fetch details for.
+- The response includes all fields related to the event, such as its `title`, `eventCategory`, `startDate`, `endDate`, `province`, `city`, `neighborhood`, and more.
+- If the event does not exist, the `event` field will be `null`, and the `error` field will contain an appropriate message.
+
+---
+
 This document provides the necessary information to test and implement the GraphQL API interactions for event management in your project.
