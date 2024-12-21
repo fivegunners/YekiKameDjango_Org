@@ -1,7 +1,7 @@
 from django.test import TestCase
 from graphene.test import Client
 from .schema import schema
-from .models import FAQ, ContactUs
+from .models import FAQ, ContactUs, Ticket, TicketMessage
 from userapp.models import User
 from datetime import datetime
 from django.core import mail
@@ -14,9 +14,12 @@ class FAQQueryTest(TestCase):
         self.user = User.objects.create_user(phone="09123456789", password="password123")
 
         # ایجاد چند FAQ نمونه
-        FAQ.objects.create(question_title="What is GraphQL?", question_answer="A query language for APIs.", created_by=self.user, created_at=datetime.now())
-        FAQ.objects.create(question_title="What is Django?", question_answer="A high-level Python web framework.", created_by=self.user, created_at=datetime.now())
-
+        FAQ.objects.create(question_title="What is GraphQL?", question_answer="A query language for APIs.",
+                           created_by=self.user, created_at=datetime.now())
+        FAQ.objects.create(question_title="What is Django?", question_answer="A high-level Python web framework.",
+                           created_by=self.user, created_at=datetime.now())
+        FAQ.objects.create(question_title="What is Postgresql?", question_answer="A Open-Source Database.",
+                           created_by=self.user, created_at=datetime.now())
         # تنظیم کلاینت برای اجرای کوئری‌ها
         self.client = Client(schema)
 
@@ -32,18 +35,21 @@ class FAQQueryTest(TestCase):
         '''
         # اجرای کوئری
         response = self.client.execute(query)
+        print(response)
 
         # چک کردن پاسخ کوئری
         data = response.get("data").get("allFaqs")
 
         # انتظار داریم که دو FAQ در دیتابیس باشد
-        self.assertEqual(len(data), 2)
+        self.assertEqual(len(data), 3)
 
         # بررسی محتوا
         self.assertEqual(data[0]["questionTitle"], "What is GraphQL?")
         self.assertEqual(data[0]["questionAnswer"], "A query language for APIs.")
         self.assertEqual(data[1]["questionTitle"], "What is Django?")
         self.assertEqual(data[1]["questionAnswer"], "A high-level Python web framework.")
+        self.assertEqual(data[2]["questionTitle"], "What is Postgresql?")
+        self.assertEqual(data[2]["questionAnswer"], "A Open-Source Database.")
 
 
 class ContactUsMutationTest(TestCase):

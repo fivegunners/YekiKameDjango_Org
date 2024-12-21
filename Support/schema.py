@@ -8,14 +8,14 @@ from userapp.models import User
 class FAQType(DjangoObjectType):
     class Meta:
         model = FAQ
-        fields = ('question_title', 'question_answer')
+        fields = ('question_title', 'question_answer', 'created_at')
 
 
 class Query(graphene.ObjectType):
     all_faqs = graphene.List(FAQType)
 
     def resolve_all_faqs(root, info):
-        return FAQ.objects.all()
+        return FAQ.objects.all().order_by('created_at')
 
 
 class ContactUsType(DjangoObjectType):

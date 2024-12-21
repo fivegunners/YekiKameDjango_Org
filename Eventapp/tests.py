@@ -96,13 +96,14 @@ class EventSchemaTests(TestCase):
                 subscriberCount
                 startDate
                 neighborhood
+                image
             }
         }
         '''
         response = self.client.execute(query)
         #print(response)
         data = response.get("data", {}).get("recentEvents", {})
-        #print(data)
+        print(data)
 
         # بررسی اینکه recentEvents داده‌ای دارد
         self.assertIsNotNone(data, "The recentEvents query returned None")
