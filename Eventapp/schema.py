@@ -24,7 +24,7 @@ class Query(graphene.ObjectType):
         return Event.objects.filter(city=city)
 
     def resolve_recent_events(self, info):
-        return Event.objects.annotate(subscriber_count=Count('subscribers')).order_by('-id')[:10]
+        return Event.objects.annotate(subscriber_count=Count('subscribers')).order_by('-start_date', '-id')[:10]
 
 
 class CreateEvent(graphene.Mutation):
