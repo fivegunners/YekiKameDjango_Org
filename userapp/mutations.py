@@ -40,6 +40,7 @@ class VerifyOTP(graphene.Mutation):
         otp = graphene.Int(required=True)
 
     success = graphene.Boolean()
+    token = graphene.String()
 
     def mutate(self, info, phone, otp):
         cached_otp = cache.get(f'otp_{phone}')
@@ -48,10 +49,17 @@ class VerifyOTP(graphene.Mutation):
                 user = User.objects.get(phone=phone)
                 user.is_active = True  # فعال کردن کاربر
                 user.save()
-                return VerifyOTP(success=True)
+
+                # ایجاد session
+                session = SessionStore()
+                session['user_id'] = user.id
+                session['phone'] = phone
+                session.create()
+
+                return VerifyOTP(success=True, token=session.session_key)
             except User.DoesNotExist:
-                return VerifyOTP(success=False)
-        return VerifyOTP(success=False)
+                return VerifyOTP(success=False, token=None)
+        return VerifyOTP(success=False, token=None)
 
 
 class LoginUser(graphene.Mutation):
@@ -100,17 +108,24 @@ class VerifyLoginOTP(graphene.Mutation):
         otp = graphene.Int(required=True)
 
     success = graphene.Boolean()
+    token = graphene.String()
 
     def mutate(self, info, phone, otp):
         cached_otp = cache.get(f'login_otp_{phone}')
         if cached_otp == otp:
             try:
                 user = User.objects.get(phone=phone, is_active=True)
-                # هدایت کاربر به پنل
-                return VerifyLoginOTP(success=True)
+
+                # ایجاد session
+                session = SessionStore()
+                session['user_id'] = user.id
+                session['phone'] = phone
+                session.create()
+
+                return VerifyLoginOTP(success=True, token=session.session_key)
             except User.DoesNotExist:
-                return VerifyLoginOTP(success=False)
-        return VerifyLoginOTP(success=False)
+                return VerifyLoginOTP(success=False, token=None)
+        return VerifyLoginOTP(success=False, token=None)
 
 
 class UserType(DjangoObjectType):

@@ -34,22 +34,32 @@ class UserMutationsTest(TestCase):
     def test_verify_otp(self):
         # تنظیم پیش‌شرط برای تست
         cache.set(f'otp_{self.phone}', 12345, timeout=300)
-        User.objects.create(phone=self.phone, is_active=False)
+        user = User.objects.create(phone=self.phone, is_active=False)
 
         # تست تأیید OTP
         response = self.client.execute('''
             mutation {
                 verifyOtp(phone: "%s", otp: 12345) {
                     success
+                    token
                 }
             }
         ''' % self.phone)
 
+        # بررسی موفقیت عملیات و وجود توکن
         self.assertTrue(response['data']['verifyOtp']['success'])
+        token = response['data']['verifyOtp']['token']
+        self.assertIsNotNone(token)
 
         # بررسی فعال شدن کاربر
-        user = User.objects.get(phone=self.phone)
+        user.refresh_from_db()
         self.assertTrue(user.is_active)
+
+        # بررسی داده‌های session
+        session = SessionStore(session_key=token)
+        session_data = session.load()
+        self.assertEqual(session_data.get('phone'), self.phone)
+        self.assertEqual(session_data.get('user_id'), user.id)
 
     def test_login_user_with_session(self):
         # تنظیم پیش‌شرط
@@ -104,11 +114,22 @@ class UserMutationsTest(TestCase):
             mutation {
                 verifyLoginOtp(phone: "%s", otp: 54321) {
                     success
+                    token
                 }
             }
         ''' % self.phone)
 
+        # بررسی موفقیت عملیات و وجود توکن
         self.assertTrue(response['data']['verifyLoginOtp']['success'])
+        token = response['data']['verifyLoginOtp']['token']
+        self.assertIsNotNone(token)
+
+        # بررسی داده‌های session
+        from django.contrib.sessions.backends.db import SessionStore
+        session = SessionStore(session_key=token)
+        session_data = session.load()
+        self.assertEqual(session_data.get('phone'), self.phone)
+        self.assertEqual(session_data.get('user_id'), user.id)
 
 
 class UserQueryTestCase(TestCase):
