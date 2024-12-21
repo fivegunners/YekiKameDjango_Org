@@ -231,4 +231,94 @@ mutation {
 
 ---
 
+## Review and Comment Queries
+
+### Fetch Reviews by Event
+
+#### Request:
+```graphql
+query {
+    reviewsByEvent(eventId: "1") {
+        id
+        rating
+        commentText
+        createdAt
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "reviewsByEvent": [
+            {
+                "id": "3",
+                "rating": 5.0,
+                "commentText": "Absolutely loved it!",
+                "createdAt": "2024-12-21T15:30:00+00:00"
+            },
+            {
+                "id": "2",
+                "rating": 4.5,
+                "commentText": "Great event!",
+                "createdAt": "2024-12-20T10:30:00+00:00"
+            },
+            {
+                "id": "1",
+                "rating": 3.0,
+                "commentText": "It was okay.",
+                "createdAt": "2024-12-19T09:00:00+00:00"
+            }
+        ]
+    }
+}
+```
+
+### Fetch Comments by Review
+
+#### Request:
+```graphql
+query {
+    commentsByReview(reviewId: "1") {
+        id
+        commentText
+        createdAt
+        level
+        isActive
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "commentsByReview": [
+            {
+                "id": "3",
+                "commentText": "Not great.",
+                "createdAt": "2024-12-21T16:00:00+00:00",
+                "level": 1,
+                "isActive": true
+            },
+            {
+                "id": "2",
+                "commentText": "It was okay.",
+                "createdAt": "2024-12-21T14:00:00+00:00",
+                "level": 1,
+                "isActive": true
+            },
+            {
+                "id": "1",
+                "commentText": "Loved it!",
+                "createdAt": "2024-12-21T12:00:00+00:00",
+                "level": 1,
+                "isActive": true
+            }
+        ]
+    }
+}
+```
+
 This document provides the necessary information to test and implement the GraphQL API interactions for event management in your project.
