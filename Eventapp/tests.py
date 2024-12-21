@@ -5,6 +5,7 @@ from .schema import schema
 from .models import Event, Review, Comment, UserEventRole, EventFeature
 from datetime import datetime, timedelta
 from userapp.models import User  # اضافه کردن مدل User
+from django.utils.timezone import make_aware
 
 
 class EventSchemaTests(TestCase):
@@ -103,7 +104,7 @@ class EventSchemaTests(TestCase):
         response = self.client.execute(query)
         #print(response)
         data = response.get("data", {}).get("recentEvents", {})
-        print(data)
+        #print(data)
 
         # بررسی اینکه recentEvents داده‌ای دارد
         self.assertIsNotNone(data, "The recentEvents query returned None")
@@ -218,10 +219,10 @@ class TestReviewAndCommentMutations(TestCase):
 
         # ارسال درخواست به GraphQL
         response = self.client.execute(mutation)
-        print(response)
+        #print(response)
         # استخراج داده‌های پاسخ
         response_data = response.get("data", {}).get("createReview", {}).get("review")
-        print(response_data)
+        #print(response_data)
         # بررسی پاسخ
         self.assertIsNotNone(response_data)  # بررسی که داده‌ها برگشت داده شده‌اند
         self.assertEqual(response_data["rating"], 4.5)
@@ -412,7 +413,7 @@ class CommentSchemaTests(TestCase):
 
         response = self.client.execute(query)
         data = response.get("data", {}).get("commentsByReview", [])
-        print(data)
+        #print(data)
 
         # بررسی پاسخ
         self.assertEqual(len(data), 3, "There should be 3 comments for the review.")
@@ -423,3 +424,95 @@ class CommentSchemaTests(TestCase):
         self.assertEqual(data[2]["commentText"], "Loved it!", "The third comment should have the oldest created_at.")
         self.assertTrue(data[0]["isActive"], "The isActive field should be True.")
         self.assertEqual(data[0]["level"], 1, "The level field should be 1.")
+
+
+class EventDetailPage(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت یک کاربر تستی با استفاده از متد create_user
+        cls.user = User.objects.create_user(phone="09123456789", password="password123")
+
+        # تاریخ‌های تستی به صورت دستی
+        cls.start_date = datetime(2024, 12, 22, 10, 0, 0)
+        cls.end_date = datetime(2024, 12, 22, 18, 0, 0)
+        cls.registration_start_date = datetime(2024, 12, 20, 10, 0, 0)
+        cls.registration_end_date = datetime(2024, 12, 21, 18, 0, 0)
+
+        # ساخت رویداد تستی با تمام فیلدها
+        cls.event = Event.objects.create(
+            title="Event in Tehran",
+            event_category="education",
+            about_event="This is a detailed description of the event.",
+            image=None,  # بدون تصویر
+            start_date=cls.start_date,
+            end_date=cls.end_date,
+            province="تهران",
+            city="تهران",
+            neighborhood="تهرانپارس",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634780",
+            registration_start_date=cls.registration_start_date,
+            registration_end_date=cls.registration_end_date,
+            full_description="This is the full description of the event.",
+            max_subscribers=100,
+            event_owner=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_event_details_query(self):
+        # تست کوئری برای دریافت اطلاعات کامل یک Event
+        query = '''
+        query {
+            eventDetails(eventId: "%s") {
+                event {
+                    id
+                    title
+                    eventCategory
+                    aboutEvent
+                    startDate
+                    endDate
+                    province
+                    city
+                    neighborhood
+                    postalAddress
+                    postalCode
+                    registrationStartDate
+                    registrationEndDate
+                    fullDescription
+                    maxSubscribers
+                    eventOwner {
+                        phone
+                    }
+                }
+                error
+            }
+        }
+        ''' % self.event.id
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("eventDetails", {})
+
+        # بررسی اینکه خطایی وجود ندارد
+        self.assertIsNone(data["error"], "Error field should be None.")
+
+        # بررسی فیلدهای رویداد
+        event_data = data.get("event", {})
+        self.assertEqual(event_data["id"], str(self.event.id), "Event ID should match.")
+        self.assertEqual(event_data["title"], self.event.title, "Event title should match.")
+        self.assertEqual(event_data["eventCategory"], self.event.event_category, "Event category should match.")
+        self.assertEqual(event_data["aboutEvent"], self.event.about_event, "Event about field should match.")
+        self.assertEqual(event_data["startDate"], "2024-12-22T10:00:00+00:00", "Event start date should match.")
+        self.assertEqual(event_data["endDate"], "2024-12-22T18:00:00+00:00", "Event end date should match.")
+        self.assertEqual(event_data["province"], self.event.province, "Event province should match.")
+        self.assertEqual(event_data["city"], self.event.city, "Event city should match.")
+        self.assertEqual(event_data["neighborhood"], self.event.neighborhood, "Event neighborhood should match.")
+        self.assertEqual(event_data["postalAddress"], self.event.postal_address, "Event postal address should match.")
+        self.assertEqual(event_data["postalCode"], self.event.postal_code, "Event postal code should match.")
+        self.assertEqual(event_data["registrationStartDate"], "2024-12-20T10:00:00+00:00", "Event registration start date should match.")
+        self.assertEqual(event_data["registrationEndDate"], "2024-12-21T18:00:00+00:00", "Event registration end date should match.")
+        self.assertEqual(event_data["fullDescription"], self.event.full_description, "Event full description should match.")
+        self.assertEqual(event_data["maxSubscribers"], self.event.max_subscribers, "Event max subscribers should match.")
+        self.assertEqual(event_data["eventOwner"]["phone"], self.event.event_owner.phone, "Event owner phone should match.")

@@ -28,11 +28,38 @@ class CommentType(DjangoObjectType):
         fields = ('id', 'review', 'user', 'comment_text', 'created_at', 'level', 'is_active')
 
 
+class UserType(DjangoObjectType):
+    class Meta:
+        model = User
+        fields = ('id', 'phone', 'fullname')
+
+
+class EventDetailType(DjangoObjectType):
+    class Meta:
+        model = Event
+        fields = '__all__'
+
+    event_owner = graphene.Field(UserType)
+    event_category = graphene.String()
+
+    def resolve_event_owner(self, info):
+        return self.event_owner
+
+    def resolve_event_category(self, info):
+        return self.event_category
+
+
+class EventDetailResponseType(graphene.ObjectType):
+    event = graphene.Field(EventDetailType)
+    error = graphene.String()
+
+
 class Query(graphene.ObjectType):
     search_events_by_city = graphene.List(EventType, city=graphene.String(required=True))
     recent_events = graphene.List(EventType)
     reviews_by_event = graphene.List(ReviewType, event_id=graphene.ID(required=True))
     comments_by_review = graphene.List(CommentType, review_id=graphene.ID(required=True))
+    event_details = graphene.Field(EventDetailResponseType, event_id=graphene.ID(required=True))
 
     def resolve_search_events_by_city(self, info, city):
         return Event.objects.filter(city=city).order_by('-start_date')
@@ -45,6 +72,14 @@ class Query(graphene.ObjectType):
 
     def resolve_comments_by_review(self, info, review_id):
         return Comment.objects.filter(review_id=review_id).order_by('-created_at')
+
+    def resolve_event_details(self, info, event_id):
+        try:
+            event = Event.objects.get(id=event_id)
+            return EventDetailResponseType(event=event, error=None)
+        except Event.DoesNotExist:
+            return EventDetailResponseType(event=None, error="Event does not exist!")
+
 
 class CreateEvent(graphene.Mutation):
     class Arguments:
