@@ -35,7 +35,7 @@ class Query(graphene.ObjectType):
     comments_by_review = graphene.List(CommentType, review_id=graphene.ID(required=True))
 
     def resolve_search_events_by_city(self, info, city):
-        return Event.objects.filter(city=city)
+        return Event.objects.filter(city=city).order_by('-start_date')
 
     def resolve_recent_events(self, info):
         return Event.objects.annotate(subscriber_count=Count('subscribers')).order_by('-start_date', '-id')[:10]
