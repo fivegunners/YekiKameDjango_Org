@@ -1,9 +1,13 @@
 import random
 from django.core.cache import cache
 import graphene
+from django.contrib.sessions.models import Session
+from datetime import datetime, timedelta
+import uuid
 from .models import User
 from django.contrib.auth.hashers import check_password
 from graphene_django.types import DjangoObjectType
+from django.contrib.sessions.backends.db import SessionStore
 
 
 class RegisterUser(graphene.Mutation):
@@ -56,16 +60,22 @@ class LoginUser(graphene.Mutation):
         password = graphene.String(required=True)
 
     success = graphene.Boolean()
+    token = graphene.String()
 
     def mutate(self, info, phone, password):
         try:
             user = User.objects.get(phone=phone)
             if user.check_password(password) and user.is_active:
-                # هدایت کاربر به صفحه پنل
-                return LoginUser(success=True)
+                # ایجاد session
+                session = SessionStore()
+                session['user_id'] = user.id
+                session['phone'] = phone
+                session.create()
+
+                return LoginUser(success=True, token=session.session_key)
         except User.DoesNotExist:
             pass
-        return LoginUser(success=False)
+        return LoginUser(success=False, token=None)
 
 
 class RequestLoginOTP(graphene.Mutation):
@@ -106,6 +116,7 @@ class VerifyLoginOTP(graphene.Mutation):
 class UserType(DjangoObjectType):
     class Meta:
         model = User
+
 
 class UpdateEmailMutation(graphene.Mutation):
     class Arguments:

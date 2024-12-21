@@ -3,6 +3,10 @@ from graphene.test import Client
 from django.core.cache import cache
 from .schema import schema
 from .models import User
+from django.contrib.sessions.models import Session
+from datetime import datetime, timedelta
+from django.contrib.sessions.backends.db import SessionStore
+
 
 
 class UserMutationsTest(TestCase):
@@ -47,24 +51,32 @@ class UserMutationsTest(TestCase):
         user = User.objects.get(phone=self.phone)
         self.assertTrue(user.is_active)
 
-    def test_login_user(self):
-        # تنظیم پیش‌شرط برای تست
+    def test_login_user_with_session(self):
+        # تنظیم پیش‌شرط
         user = User(phone=self.phone)
         user.set_password(self.password)
         user.is_active = True
         user.save()
 
-        # تست لاگین با رمز عبور
+        # لاگین و بررسی session
         response = self.client.execute('''
             mutation {
                 loginUser(phone: "%s", password: "%s") {
                     success
+                    token
                 }
             }
         ''' % (self.phone, self.password))
 
         self.assertTrue(response['data']['loginUser']['success'])
-        print(response)
+        token = response['data']['loginUser']['token']
+        self.assertIsNotNone(token)
+
+        # بررسی داده‌های session
+        session = SessionStore(session_key=token)
+        session_data = session.load()
+        self.assertEqual(session_data.get('phone'), self.phone)
+        self.assertEqual(session_data.get('user_id'), user.id)
 
     def test_request_login_otp(self):
         # تست درخواست OTP برای لاگین
@@ -113,6 +125,34 @@ class UserQueryTestCase(TestCase):
         self.user.is_active = True
         self.user.is_admin = False
         self.user.save()
+
+        self.session_key = "test-session-key"
+        session = SessionStore(session_key=self.session_key)
+        session['user_id'] = self.user.id
+        session['phone'] = self.user.phone
+        session.create()
+
+    def test_check_token_query(self):
+        query = '''
+            query {
+                checkToken(phone: "%s", userId: %d)
+            }
+        ''' % (self.user.phone, self.user.id)
+
+        response = self.client.execute(query)
+        print(response)
+        self.assertEqual(response['data']['checkToken'], "Token is valid.")
+
+    def test_check_token_query_invalid(self):
+        query = '''
+            query {
+                checkToken(phone: "09876543210", userId: 999)
+            }
+        '''
+
+        response = self.client.execute(query)
+        print(response)
+        self.assertEqual(response['data']['checkToken'], "You need to login.")
 
     def test_user_query(self):
         # تعریف Query برای کاربر خاص
@@ -171,7 +211,6 @@ class UpdateUserInfoTests(TestCase):
         }
         """
         response = self.client.execute(mutation)
-        print(response)
         data = response.get("data").get("updateEmail").get("success")
 
         # بررسی موفقیت‌آمیز بودن عملیات
@@ -191,7 +230,6 @@ class UpdateUserInfoTests(TestCase):
         }
         """
         response = self.client.execute(mutation)
-        print(response)
         data = response.get("data").get("updateFullname").get("success")
 
         # بررسی موفقیت‌آمیز بودن عملیات
@@ -211,7 +249,6 @@ class UpdateUserInfoTests(TestCase):
         }
         """
         response = self.client.execute(mutation)
-        print(response)
         data = response.get("data").get("updatePassword").get("success")
 
         # بررسی موفقیت‌آمیز بودن عملیات
