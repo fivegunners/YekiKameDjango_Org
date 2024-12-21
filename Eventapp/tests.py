@@ -320,7 +320,6 @@ class TestReviewAndCommentMutations(TestCase):
 
         response = self.client.execute(query)
         data = response.get("data", {}).get("reviewsByEvent", [])
-        print(data)
 
         # بررسی پاسخ
         self.assertEqual(len(data), 3, "There should be 3 reviews for the event.")
@@ -328,3 +327,99 @@ class TestReviewAndCommentMutations(TestCase):
         self.assertEqual(data[1]["rating"], 3.2, "The second review should have the middle created_at.")
         self.assertEqual(data[2]["rating"], 4.3, "The third review should have the oldest created_at.")
         self.assertIsNotNone(data[0]["createdAt"], "The createdAt field should not be None.")
+
+
+class CommentSchemaTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت یک کاربر تستی با استفاده از متد create_user
+        cls.user = User.objects.create_user(phone="09123456789", password="password123")
+
+        # ساخت رویداد تستی
+        cls.event = Event.objects.create(
+            title="Event in Tehran",
+            event_category="education",
+            city="تهران",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634780",
+            registration_start_date=datetime.now(),
+            registration_end_date=datetime.now() + timedelta(days=1),
+            max_subscribers=100,
+            start_date=datetime.now(),
+            end_date=datetime.now() + timedelta(days=1),
+            neighborhood="تهرانپارس",
+            event_owner=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_comments_by_review_query(self):
+        # ساخت یک Review تستی
+        review = Review.objects.create(
+            event=self.event,
+            user=self.user,
+            rating=4.5,
+            comment_text="Great event!",
+            created_at=datetime.now() - timedelta(days=10)
+        )
+
+        # ساخت چندین Comment تستی
+        comment1 = Comment.objects.create(
+            review=review,
+            user=self.user,
+            comment_text="Loved it!",
+            level=1,
+            is_active=True
+        )
+        comment2 = Comment.objects.create(
+            review=review,
+            user=self.user,
+            comment_text="It was okay.",
+            level=1,
+            is_active=True
+        )
+        comment3 = Comment.objects.create(
+            review=review,
+            user=self.user,
+            comment_text="Not great.",
+            level=1,
+            is_active=True
+        )
+
+        # تنظیم مقادیر created_at به صورت دستی
+        comment1.created_at = datetime.now() - timedelta(days=4)
+        comment2.created_at = datetime.now() - timedelta(days=2)
+        comment3.created_at = datetime.now()
+
+        comment1.save()
+        comment2.save()
+        comment3.save()
+
+        # تست کوئری برای دریافت تمام Comments مربوط به یک Review
+        query = '''
+        query {
+            commentsByReview(reviewId: "%s") {
+                id
+                commentText
+                createdAt
+                level
+                isActive
+            }
+        }
+        ''' % review.id
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("commentsByReview", [])
+        print(data)
+
+        # بررسی پاسخ
+        self.assertEqual(len(data), 3, "There should be 3 comments for the review.")
+        self.assertEqual(data[0]["commentText"], "Not great.",
+                         "The first comment should have the most recent created_at.")
+        self.assertEqual(data[1]["commentText"], "It was okay.",
+                         "The second comment should have the middle created_at.")
+        self.assertEqual(data[2]["commentText"], "Loved it!", "The third comment should have the oldest created_at.")
+        self.assertTrue(data[0]["isActive"], "The isActive field should be True.")
+        self.assertEqual(data[0]["level"], 1, "The level field should be 1.")
