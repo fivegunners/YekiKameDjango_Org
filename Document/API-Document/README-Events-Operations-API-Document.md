@@ -101,27 +101,29 @@ query {
 ```graphql
 mutation {
     createEvent(
-        title: "New Event",
-        eventCategory: "entertainment",
-        aboutEvent: "A new entertainment event.",
-        startDate: "2024-12-01T09:00:00Z",
-        endDate: "2024-12-01T17:00:00Z",
-        registrationStartDate: "2024-11-01T09:00:00Z",
-        registrationEndDate: "2024-11-25T17:00:00Z",
-        province: "تهران",
-        city: "تهران",
-        neighborhood: "District 1",
-        postalAddress: "Some Street, Tehran",
-        postalCode: "1234567890",
-        maxSubscribers: 150,
+        "title": "Event in Tehran",
+        "eventCategory": "education",
+        "aboutEvent": "This is a detailed description of the event.",
+        "startDate": "2024-12-22T10:00:00+00:00",
+        "endDate": "2024-12-22T18:00:00+00:00",
+        "province": "تهران",
+        "city": "تهران",
+        "neighborhood": "تهرانپارس",
+        "postalAddress": "تهرانپارس، خیابان ۱۷۴ غربی",
+        "postalCode": "1592634780",
+        "registrationStartDate": "2024-12-20T10:00:00+00:00",
+        "registrationEndDate": "2024-12-21T18:00:00+00:00",
+        "fullDescription": "This is the full description of the event.",
+        "maxSubscribers": 100,
         eventOwnerPhone: "09123456789"
     ) {
         event {
+            id
             title
             eventCategory
+            city
+            startDate
             neighborhood
-            postalAddress
-            postalCode
             maxSubscribers
         }
     }
@@ -134,12 +136,13 @@ mutation {
     "data": {
         "createEvent": {
             "event": {
-                "title": "New Event",
-                "eventCategory": "entertainment",
-                "neighborhood": "District 1",
-                "postalAddress": "Some Street, Tehran",
-                "postalCode": "1234567890",
-                "maxSubscribers": 150
+                "id": 1,
+                "title": "Event in Tehran",
+                "eventCategory": "education",
+                "city": "تهران",
+                "neighborhood": "تهرانپارس",
+                "startDate": "2024-12-22T10:00:00+00:00",
+                "maxSubscribers": 100
             }
         }
     }
