@@ -1,11 +1,13 @@
 from django.test import TestCase
 from graphene.test import Client
 from .schema import schema
-from .models import FAQ, ContactUs, Ticket, TicketMessage
+from .models import FAQ, ContactUs, Ticket, TicketMessage, Notice
 from userapp.models import User
 from datetime import datetime
 from django.core import mail
 from django.utils import timezone
+from django.utils.timezone import now
+from datetime import timedelta
 
 
 class FAQQueryTest(TestCase):
@@ -157,3 +159,61 @@ class CreateTicketTestCase(TestCase):
     def tearDown(self):
         # پاکسازی داده‌ها پس از تست
         self.user.delete()
+
+
+class QueryNotice(TestCase):
+    def setUp(self):
+
+        self.client = Client(schema)
+        # ایجاد یک کاربر تست
+        self.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+
+        self.user.fullname = "John Doe"
+        self.user.email = "johndoe@gmail.com"
+        self.user.save()
+
+        # ایجاد اطلاعیه‌های تستی
+        Notice.objects.create(
+            title="Active Notice 1",
+            content="This is the first active notice.",
+            created_by=self.user,
+            expiration_date=now() + timedelta(days=2)
+        )
+        Notice.objects.create(
+            title="Active Notice 2",
+            content="This is the second active notice.",
+            created_by=self.user,
+            expiration_date=now() + timedelta(days=5)
+        )
+        Notice.objects.create(
+            title="Expired Notice",
+            content="This notice has already expired.",
+            created_by=self.user,
+            expiration_date=now() - timedelta(days=1)
+        )
+
+    def test_active_notices_query(self):
+        # کوئری برای دریافت اطلاعیه‌های فعال
+        query = '''
+        query {
+            activeNotices {
+                title
+                content
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        notices = response.get("data", {}).get("activeNotices", [])
+
+        # بررسی تعداد اطلاعیه‌های فعال
+        self.assertEqual(len(notices), 2, "There should be 2 active notices.")
+
+        # بررسی محتوای اطلاعیه‌های فعال
+        self.assertEqual(notices[0]["title"], "Active Notice 1", "The first notice title should match.")
+        self.assertEqual(notices[0]["content"], "This is the first active notice.", "The first notice content should match.")
+        self.assertEqual(notices[1]["title"], "Active Notice 2", "The second notice title should match.")
+        self.assertEqual(notices[1]["content"], "This is the second active notice.", "The second notice content should match.")

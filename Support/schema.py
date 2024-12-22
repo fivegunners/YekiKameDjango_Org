@@ -1,8 +1,9 @@
 import graphene
 from graphene_django.types import DjangoObjectType
-from .models import FAQ, ContactUs, Ticket, TicketMessage
+from .models import FAQ, ContactUs, Ticket, TicketMessage, Notice
 from django.core.mail import send_mail
 from userapp.models import User
+from django.utils.timezone import now
 
 
 class FAQType(DjangoObjectType):
@@ -10,9 +11,18 @@ class FAQType(DjangoObjectType):
         model = FAQ
         fields = ('question_title', 'question_answer', 'created_at')
 
+class NoticeType(DjangoObjectType):
+    class Meta:
+        model = Notice
+        fields = ('title', 'content')
+
 
 class Query(graphene.ObjectType):
     all_faqs = graphene.List(FAQType)
+    active_notices = graphene.List(NoticeType)
+
+    def resolve_active_notices(self, info):
+        return Notice.objects.filter(expiration_date__gt=now())
 
     def resolve_all_faqs(root, info):
         return FAQ.objects.all().order_by('created_at')
