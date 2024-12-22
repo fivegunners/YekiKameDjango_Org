@@ -88,22 +88,6 @@ class UserMutationsTest(TestCase):
         self.assertEqual(session_data.get('phone'), self.phone)
         self.assertEqual(session_data.get('user_id'), user.id)
 
-    def test_request_login_otp(self):
-        # تست درخواست OTP برای لاگین
-        response = self.client.execute('''
-            mutation {
-                requestLoginOtp(phone: "%s") {
-                    success
-                }
-            }
-        ''' % self.phone)
-
-        self.assertTrue(response['data']['requestLoginOtp']['success'])
-
-        # بررسی ذخیره OTP در کش
-        otp = cache.get(f'login_otp_{self.phone}')
-        self.assertIsNotNone(otp)
-
     def test_verify_login_otp(self):
         # تنظیم پیش‌شرط برای تست
         user = User.objects.create(phone=self.phone, is_active=True)
@@ -278,3 +262,50 @@ class UpdateUserInfoTests(TestCase):
         # بررسی تغییر رمز عبور در دیتابیس
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password("newpassword123"))
+
+
+class RequestLoginOtpTest(TestCase):
+    def setUp(self):
+        self.client = Client(schema)
+        self.phone = "09123456789"
+        self.password = "testpassword"
+
+        # ایجاد کاربر تستی
+        self.user = User.objects.create_user(
+            phone=self.phone,
+            password=self.password
+        )
+
+    def test_request_login_otp(self):
+        # تست درخواست OTP برای لاگین
+        response = self.client.execute('''
+            mutation {
+                requestLoginOtp(phone: "%s") {
+                    success
+                    message
+                }
+            }
+        ''' % self.phone)
+
+        # بررسی موفقیت‌آمیز بودن درخواست
+        self.assertTrue(response['data']['requestLoginOtp']['success'])
+        self.assertEqual(response['data']['requestLoginOtp']['message'], "OTP sent successfully.")
+
+        # بررسی ذخیره OTP در کش
+        otp = cache.get(f'login_otp_{self.phone}')
+        self.assertIsNotNone(otp, "OTP should be stored in the cache.")
+
+    def test_request_login_otp_user_not_exist(self):
+        # تست درخواست OTP برای شماره‌ای که ثبت نشده است
+        response = self.client.execute('''
+            mutation {
+                requestLoginOtp(phone: "09111234567") {
+                    success
+                    message
+                }
+            }
+        ''')
+
+        # بررسی شکست درخواست
+        self.assertFalse(response['data']['requestLoginOtp']['success'])
+        self.assertEqual(response['data']['requestLoginOtp']['message'], "User with this phone number does not exist.")

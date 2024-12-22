@@ -91,15 +91,22 @@ class RequestLoginOTP(graphene.Mutation):
         phone = graphene.String(required=True)
 
     success = graphene.Boolean()
+    message = graphene.String()
 
     def mutate(self, info, phone):
-        # ایجاد و ذخیره کد OTP جدید
-        otp = random.randint(10000, 99999)
-        cache.set(f'login_otp_{phone}', otp, timeout=300)
+        try:
+            # بررسی اینکه شماره موبایل ثبت شده باشد
+            user = User.objects.get(phone=phone)
 
-        # ارسال کد OTP به کاربر (اینجا فرضی است و باید به کمک API پیامک انجام شود)
-        print(f"Login OTP Code: {otp}")
-        return RequestLoginOTP(success=True)
+            # ایجاد و ذخیره کد OTP جدید
+            otp = random.randint(10000, 99999)
+            cache.set(f'login_otp_{phone}', otp, timeout=300)
+
+            # ارسال کد OTP به کاربر (اینجا فرضی است و باید به کمک API پیامک انجام شود)
+            print(f"Login OTP Code: {otp}")
+            return RequestLoginOTP(success=True, message="OTP sent successfully.")
+        except User.DoesNotExist:
+            return RequestLoginOTP(success=False, message="User with this phone number does not exist.")
 
 
 class VerifyLoginOTP(graphene.Mutation):
