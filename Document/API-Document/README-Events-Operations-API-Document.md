@@ -101,20 +101,20 @@ query {
 ```graphql
 mutation {
     createEvent(
-        "title": "Event in Tehran",
-        "eventCategory": "education",
-        "aboutEvent": "This is a detailed description of the event.",
-        "startDate": "2024-12-22T10:00:00+00:00",
-        "endDate": "2024-12-22T18:00:00+00:00",
-        "province": "تهران",
-        "city": "تهران",
-        "neighborhood": "تهرانپارس",
-        "postalAddress": "تهرانپارس، خیابان ۱۷۴ غربی",
-        "postalCode": "1592634780",
-        "registrationStartDate": "2024-12-20T10:00:00+00:00",
-        "registrationEndDate": "2024-12-21T18:00:00+00:00",
-        "fullDescription": "This is the full description of the event.",
-        "maxSubscribers": 100,
+        title: "Event in Tehran",
+        eventCategory: "education",
+        aboutEvent: "This is a detailed description of the event.",
+        startDate: "2024-12-22T10:00:00+00:00",
+        endDate: "2024-12-22T18:00:00+00:00",
+        province: "تهران",
+        city: "تهران",
+        neighborhood: "تهرانپارس",
+        postalAddress: "تهرانپارس، خیابان ۱۷۴ غربی",
+        postalCode: "1592634780",
+        registrationStartDate: "2024-12-20T10:00:00+00:00",
+        registrationEndDate: "2024-12-21T18:00:00+00:00",
+        fullDescription: "This is the full description of the event.",
+        maxSubscribers: 100,
         eventOwnerPhone: "09123456789"
     ) {
         event {
@@ -128,6 +128,7 @@ mutation {
         }
     }
 }
+
 ```
 
 #### Response:
