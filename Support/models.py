@@ -81,3 +81,19 @@ class ContactUs(models.Model):
 
     def __str__(self):
         return f"{self.full_name} - {self.subject}"
+
+
+class Notice(models.Model):
+    title = models.CharField(max_length=255, verbose_name="عنوان اطلاعیه")
+    content = models.TextField(verbose_name="متن اطلاعیه")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد اطلاعیه")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ آپدیت اطلاعیه")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="کاربر سازنده اطلاعیه", related_name="notices")
+    expiration_date = models.DateTimeField(verbose_name="تاریخ انقضای اطلاعیه")
+
+    class Meta:
+        verbose_name = "اطلاعیه"
+        verbose_name_plural = "اطلاعیه‌ها"
+
+    def __str__(self):
+        return f"{self.title} - {self.content[:50]} - {self.expiration_date}"
