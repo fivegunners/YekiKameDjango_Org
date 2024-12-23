@@ -8,7 +8,7 @@
 
 ## Project Setup
 
-### 1. Clone the Repository
+### 1. Clone The Repository
 
 First, clone the project:
 
@@ -83,3 +83,5 @@ python manage.py test Eventapp.tests
   ```
 
 - **GraphQL Support**: This project includes GraphQL capabilities, which can be accessed at `/graphql/`.
+
+workflow test44

@@ -22,9 +22,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-y50j*)hrzriga5nih9ef#x=u40aq8g$sw(u=*t$h+=$d+7kj-w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+
+    '95.217.8.192',
+    '95.217.8.192:8000',
+    'localhost',
+    '127.0.0.1',
+    
+]
+
+print(ALLOWED_HOSTS)
 
 # Application definition
 
@@ -84,16 +93,38 @@ WSGI_APPLICATION = 'YekiKamePrj.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB', 'db'),
+#         'USER': os.getenv('POSTGRES_USER', 'postgres'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', '403723807'),
+#         'HOST': os.getenv('DB_HOST', 'db'),
+#         'PORT': os.getenv('DB_PORT', '5432'),
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Yekikame',
         'USER': 'postgres',
         'PASSWORD': '403723807',
-        'HOST': 'localhost',  # یا آدرس IP سرور پایگاه داده
-        'PORT': '',  # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
+        'HOST': 'db',  # یا آدرس IP سرور پایگاه داده
+        'PORT': '5432',  # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'db',  # Match POSTGRES_DB in docker-compose.yml
+#         'USER': 'user',  # Match POSTGRES_USER
+#         'PASSWORD': 'password',  # Match POSTGRES_PASSWORD
+#         'HOST': 'db',  # Match the service name in docker-compose.yml
+#         'PORT': 5432,
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -130,10 +161,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = '/app/static_media/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static_media/')
+# Serve static files during development
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
 MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-STATIC_ROOT = os.path.join(BASE_DIR, 'static_media/')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static_media/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -142,49 +179,49 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # تعیین سطح لاگینگ بر اساس متغیر محیطی (پیش‌فرض: INFO)
-LOG_LEVEL = os.environ.get('DJANGO_LOG_LEVEL', 'INFO')
+# LOG_LEVEL = os.environ.get('DJANGO_LOG_LEVEL', 'INFO')
 
-# مسیر فایل لاگ (با استفاده از متغیر محیطی یا مسیر پیش‌فرض)
-LOG_FILE_PATH = os.environ.get('DJANGO_LOG_FILE', os.path.join(BASE_DIR, 'logs', 'django.log'))
+# # مسیر فایل لاگ (با استفاده از متغیر محیطی یا مسیر پیش‌فرض)
+# LOG_FILE_PATH = os.environ.get('DJANGO_LOG_FILE', os.path.join(BASE_DIR, 'logs', 'django.log'))
 
-# ایجاد دایرکتوری لاگ‌ها در صورت عدم وجود
-os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
+# # ایجاد دایرکتوری لاگ‌ها در صورت عدم وجود
+# os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} {name} {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': LOG_LEVEL,
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'file': {
-            'level': 'DEBUG',  # ذخیره همه پیام‌ها در فایل لاگ
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': LOG_FILE_PATH,
-            'maxBytes': 5 * 1024 * 1024,  # حداکثر ۵ مگابایت برای هر فایل
-            'backupCount': 5,  # نگهداری ۵ فایل پشتیبان
-            'formatter': 'verbose',
-            'encoding': 'utf8',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': LOG_LEVEL,
-            'propagate': True,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'verbose': {
+#             'format': '[{asctime}] {levelname} {name} {message}',
+#             'style': '{',
+#             'datefmt': '%Y-%m-%d %H:%M:%S',
+#         },
+#         'simple': {
+#             'format': '{levelname} {message}',
+#             'style': '{',
+#         },
+#     },
+#     'handlers': {
+#         'console': {
+#             'level': LOG_LEVEL,
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple',
+#         },
+#         'file': {
+#             'level': 'DEBUG',  # ذخیره همه پیام‌ها در فایل لاگ
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': LOG_FILE_PATH,
+#             'maxBytes': 5 * 1024 * 1024,  # حداکثر ۵ مگابایت برای هر فایل
+#             'backupCount': 5,  # نگهداری ۵ فایل پشتیبان
+#             'formatter': 'verbose',
+#             'encoding': 'utf8',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console', 'file'],
+#             'level': LOG_LEVEL,
+#             'propagate': True,
+#         },
+#     },
+# }
