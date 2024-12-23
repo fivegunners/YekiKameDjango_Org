@@ -47,7 +47,7 @@ jobs:
             git pull origin Main  # Pull the latest code
           else
             echo "Project does not exist. Cloning repository..."
-            git clone https://github.com/your_username/your_repo.git YekiKameDjango_Org
+            git clone https://github.com/YekiKame/YekiKameDjango_Org.git YekiKameDjango_Org
             cd YekiKameDjango_Org
           fi
       
