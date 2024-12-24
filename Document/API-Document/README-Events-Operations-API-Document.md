@@ -408,6 +408,66 @@ query {
 - The response includes all fields related to the event, such as its `title`, `eventCategory`, `startDate`, `endDate`, `province`, `city`, `neighborhood`, and more.
 - If the event does not exist, the `event` field will be `null`, and the `error` field will contain an appropriate message.
 
+### Fetch Related Events
+
+The `relatedEvents` query allows you to fetch up to 5 events that share the same category as a given event.
+
+#### Request:
+```graphql
+query {
+    relatedEvents(eventId: "1") {
+        title
+        eventCategory
+    }
+}
+```
+
+#### Response (if related events exist):
+```json
+{
+    "data": {
+        "relatedEvents": [
+            {
+                "title": "Related Event 1",
+                "eventCategory": "education"
+            },
+            {
+                "title": "Related Event 2",
+                "eventCategory": "education"
+            },
+            {
+                "title": "Related Event 3",
+                "eventCategory": "education"
+            },
+            {
+                "title": "Related Event 4",
+                "eventCategory": "education"
+            },
+            {
+                "title": "Related Event 5",
+                "eventCategory": "education"
+            }
+        ]
+    }
+}
+```
+
+#### Response (if no related events exist):
+```json
+{
+    "data": {
+        "relatedEvents": []
+    }
+}
+```
+
+#### Description:
+- `eventId`: The ID of the event to fetch related events for.
+- The response includes up to 5 related events that have the same category (`eventCategory`) as the given event.
+- Each related event includes:
+  - `title`: The title of the related event.
+  - `eventCategory`: The category of the related event.
+
 ---
 
 This document provides the necessary information to test and implement the GraphQL API interactions for event management in your project.
