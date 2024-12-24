@@ -516,3 +516,96 @@ class EventDetailPage(TestCase):
         self.assertEqual(event_data["fullDescription"], self.event.full_description, "Event full description should match.")
         self.assertEqual(event_data["maxSubscribers"], self.event.max_subscribers, "Event max subscribers should match.")
         self.assertEqual(event_data["eventOwner"]["phone"], self.event.event_owner.phone, "Event owner phone should match.")
+
+
+class RelatedEventsTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+
+        # ساخت ایونت اصلی
+        cls.main_event = Event.objects.create(
+            title="Main Event",
+            event_category="education",
+            about_event="This is the main event.",
+            start_date=datetime.now() + timedelta(days=1),
+            end_date=datetime.now() + timedelta(days=2),
+            province="تهران",
+            city="تهران",
+            neighborhood="تهرانپارس",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634780",
+            registration_start_date=datetime.now() - timedelta(days=1),
+            registration_end_date=datetime.now(),
+            full_description="This is the full description of the main event.",
+            max_subscribers=100,
+            event_owner=cls.user
+        )
+
+        # ساخت ایونت‌های مرتبط با همان دسته‌بندی
+        for i in range(7):
+            Event.objects.create(
+                title=f"Related Event {i+1}",
+                event_category="education",
+                about_event=f"This is related event {i+1}.",
+                start_date=datetime.now() + timedelta(days=1),
+                end_date=datetime.now() + timedelta(days=2),
+                province="تهران",
+                city="تهران",
+                neighborhood=f"Neighborhood {i+1}",
+                postal_address=f"Address {i+1}",
+                postal_code=f"159263478{i}",
+                registration_start_date=datetime.now() - timedelta(days=1),
+                registration_end_date=datetime.now(),
+                full_description=f"Full description for related event {i+1}.",
+                max_subscribers=50,
+                event_owner=cls.user
+            )
+
+        # ساخت یک ایونت غیرمرتبط
+        Event.objects.create(
+            title="Unrelated Event",
+            event_category="sport",
+            about_event="This is an unrelated event.",
+            start_date=datetime.now() + timedelta(days=1),
+            end_date=datetime.now() + timedelta(days=2),
+            province="تهران",
+            city="تهران",
+            neighborhood="Different Neighborhood",
+            postal_address="Different Address",
+            postal_code="1234567890",
+            registration_start_date=datetime.now() - timedelta(days=1),
+            registration_end_date=datetime.now(),
+            full_description="This is the full description of the unrelated event.",
+            max_subscribers=50,
+            event_owner=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_related_events_query(self):
+        # کوئری برای دریافت ایونت‌های مرتبط
+        query = '''
+        query {
+            relatedEvents(eventId: "%s") {
+                title
+                eventCategory
+            }
+        }
+        ''' % self.main_event.id
+
+        response = self.client.execute(query)
+        related_events = response.get("data", {}).get("relatedEvents", [])
+
+        # بررسی تعداد ایونت‌های بازگشتی
+        self.assertLessEqual(len(related_events), 5, "There should be at most 5 related events.")
+
+        # بررسی اینکه همه ایونت‌های بازگشتی از یک دسته‌بندی هستند
+        for event in related_events:
+            self.assertEqual(event["eventCategory"], "EDUCATION", "All related events should have the same category.")
