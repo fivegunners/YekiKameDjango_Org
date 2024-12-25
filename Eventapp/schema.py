@@ -3,6 +3,7 @@ from django.db.models import Count
 from graphene_django.types import DjangoObjectType
 from .models import Event, Review, Comment, EventFeature, UserEventRole
 from userapp.models import User
+import random
 
 
 class EventType(DjangoObjectType):
@@ -60,6 +61,7 @@ class Query(graphene.ObjectType):
     reviews_by_event = graphene.List(ReviewType, event_id=graphene.ID(required=True))
     comments_by_review = graphene.List(CommentType, review_id=graphene.ID(required=True))
     event_details = graphene.Field(EventDetailResponseType, event_id=graphene.ID(required=True))
+    related_events = graphene.List(EventType, event_id=graphene.ID(required=True))
 
     def resolve_search_events_by_city(self, info, city):
         return Event.objects.filter(city=city).order_by('-start_date')
@@ -79,6 +81,23 @@ class Query(graphene.ObjectType):
             return EventDetailResponseType(event=event, error=None)
         except Event.DoesNotExist:
             return EventDetailResponseType(event=None, error="Event does not exist!")
+
+    def resolve_related_events(self, info, event_id):
+        try:
+            # پیدا کردن ایونت اصلی
+            main_event = Event.objects.get(id=event_id)
+
+            # فیلتر کردن ایونت‌های مرتبط با همان دسته‌بندی
+            related_events = Event.objects.filter(
+                event_category=main_event.event_category
+            ).exclude(id=main_event.id)
+
+            # انتخاب تصادفی ۵ ایونت از بین موارد مرتبط
+            related_events = random.sample(list(related_events), min(len(related_events), 5))
+
+            return related_events
+        except Event.DoesNotExist:
+            return []
 
 
 class CreateEvent(graphene.Mutation):
