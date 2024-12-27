@@ -8,6 +8,7 @@ from .models import User
 from django.contrib.auth.hashers import check_password
 from graphene_django.types import DjangoObjectType
 from django.contrib.sessions.backends.db import SessionStore
+import os
 
 
 class RegisterUser(graphene.Mutation):
@@ -30,6 +31,15 @@ class RegisterUser(graphene.Mutation):
 
         # ارسال کد OTP به کاربر (اینجا فرضی است و باید به کمک API پیامک انجام شود)
         print(f"OTP Code: {otp}")  # فقط برای تست
+
+        # ذخیره کد OTP در فایل
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        otp_dir = os.path.join(base_dir, "Register-Otp-Code")
+        os.makedirs(otp_dir, exist_ok=True)
+        otp_file_path = os.path.join(otp_dir, "register-otp.txt")
+
+        with open(otp_file_path, "w") as otp_file:
+            otp_file.write(f"OTP Code for {phone}: {otp}\n")
 
         return RegisterUser(success=True)
 
@@ -104,6 +114,16 @@ class RequestLoginOTP(graphene.Mutation):
 
             # ارسال کد OTP به کاربر (اینجا فرضی است و باید به کمک API پیامک انجام شود)
             print(f"Login OTP Code: {otp}")
+
+            # ذخیره کد OTP در فایل
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            otp_dir = os.path.join(base_dir, "Login-Otp-Code")
+            os.makedirs(otp_dir, exist_ok=True)
+            otp_file_path = os.path.join(otp_dir, "login-otp.txt")
+
+            with open(otp_file_path, "w") as otp_file:
+                otp_file.write(f"OTP Code for {phone}: {otp}\n")
+
             return RequestLoginOTP(success=True, message="OTP sent successfully.")
         except User.DoesNotExist:
             return RequestLoginOTP(success=False, message="User with this phone number does not exist.")
