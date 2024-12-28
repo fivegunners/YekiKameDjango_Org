@@ -167,6 +167,124 @@ mutation {
     }
 }
 ```
+### Update Email
+
+The `updateEmail` mutation allows a user to update their email address.
+
+#### Request:
+```graphql
+mutation {
+    updateEmail(phone: "09123456789", email: "newemail@example.com") {
+        success
+        message
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "updateEmail": {
+            "success": true,
+            "message": "Email updated successfully."
+        }
+    }
+}
+```
+
+#### Description:
+- `phone`: The phone number of the user.
+- `email`: The new email address to be set for the user.
+
+---
+
+### Update Fullname
+
+The `updateFullname` mutation allows a user to update their full name.
+
+#### Request:
+```graphql
+mutation {
+    updateFullname(phone: "09123456789", fullname: "John Doe") {
+        success
+        message
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "updateFullname": {
+            "success": true,
+            "message": "Fullname updated successfully."
+        }
+    }
+}
+```
+
+#### Description:
+- `phone`: The phone number of the user.
+- `fullname`: The new full name to be set for the user.
+
+---
+
+### Update Password
+
+The `updatePassword` mutation allows a user to update their password.
+
+#### Request:
+```graphql
+mutation {
+    updatePassword(phone: "09123456789", oldPassword: "oldpassword", newPassword: "newpassword123") {
+        success
+        message
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "updatePassword": {
+            "success": true,
+            "message": "Password updated successfully."
+        }
+    }
+}
+```
+
+#### Description:
+- `phone`: The phone number of the user.
+- `oldPassword`: The current password of the user.
+- `newPassword`: The new password to be set for the user.
+
+#### Error Response (Incorrect Old Password):
+```json
+{
+    "data": {
+        "updatePassword": {
+            "success": false,
+            "message": "Old password is incorrect."
+        }
+    }
+}
+```
+
+#### Error Response (User Not Found):
+```json
+{
+    "data": {
+        "updatePassword": {
+            "success": false,
+            "message": "User not found."
+        }
+    }
+}
+```
 
 ---
 
