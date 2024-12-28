@@ -62,6 +62,8 @@ class Query(graphene.ObjectType):
     comments_by_review = graphene.List(CommentType, review_id=graphene.ID(required=True))
     event_details = graphene.Field(EventDetailResponseType, event_id=graphene.ID(required=True))
     related_events = graphene.List(EventType, event_id=graphene.ID(required=True))
+    events_by_city_and_category = graphene.List(EventType, city=graphene.String(required=True),
+                                                category=graphene.String(required=True))
 
     def resolve_search_events_by_city(self, info, city):
         return Event.objects.filter(city=city).order_by('-start_date')
@@ -98,6 +100,9 @@ class Query(graphene.ObjectType):
             return related_events
         except Event.DoesNotExist:
             return []
+
+    def resolve_events_by_city_and_category(self, info, city, category):
+        return Event.objects.filter(city=city, event_category=category).order_by('-start_date')
 
 
 class CreateEvent(graphene.Mutation):
