@@ -468,6 +468,140 @@ query {
   - `title`: The title of the related event.
   - `eventCategory`: The category of the related event.
 
+
+### Fetch Events by City and Category
+
+The `eventsByCityAndCategory` query allows you to fetch events in a specific city and category, sorted by their start date in descending order.
+
+#### Request:
+```graphql
+query {
+    eventsByCityAndCategory(city: "Tehran", category: "education") {
+        title
+        city
+        eventCategory
+        startDate
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "eventsByCityAndCategory": [
+            {
+                "title": "Event 1",
+                "city": "Tehran",
+                "eventCategory": "education",
+                "startDate": "2024-01-03T10:00:00+00:00"
+            },
+            {
+                "title": "Event 2",
+                "city": "Tehran",
+                "eventCategory": "education",
+                "startDate": "2024-01-01T10:00:00+00:00"
+            }
+        ]
+    }
+}
+```
+
+#### Description:
+- `city`: The city where the events are located.
+- `category`: The category of the events to filter.
+- The response includes the `title`, `city`, `eventCategory`, and `startDate` of the events.
+
+---
+
+### Fetch Events by City and Neighborhood
+
+The `eventsByCityAndNeighborhood` query allows you to fetch events in a specific city and neighborhood, sorted by their start date in descending order.
+
+#### Request:
+```graphql
+query {
+    eventsByCityAndNeighborhood(city: "Tehran", neighborhood: "Neighborhood 1") {
+        title
+        city
+        neighborhood
+        startDate
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "eventsByCityAndNeighborhood": [
+            {
+                "title": "Event 3",
+                "city": "Tehran",
+                "neighborhood": "Neighborhood 1",
+                "startDate": "2024-01-03T10:00:00+00:00"
+            },
+            {
+                "title": "Event 1",
+                "city": "Tehran",
+                "neighborhood": "Neighborhood 1",
+                "startDate": "2024-01-01T10:00:00+00:00"
+            }
+        ]
+    }
+}
+```
+
+#### Description:
+- `city`: The city where the events are located.
+- `neighborhood`: The neighborhood of the events to filter.
+- The response includes the `title`, `city`, `neighborhood`, and `startDate` of the events.
+
+---
+
+### Fetch Events with Images by City
+
+The `eventsWithImagesByCity` query allows you to fetch events in a specific city that have an image, sorted by their start date in descending order.
+
+#### Request:
+```graphql
+query {
+    eventsWithImagesByCity(city: "Tehran") {
+        title
+        city
+        image
+        startDate
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "eventsWithImagesByCity": [
+            {
+                "title": "Event 3",
+                "city": "Tehran",
+                "image": "event3.jpg",
+                "startDate": "2024-01-03T10:00:00+00:00"
+            },
+            {
+                "title": "Event 1",
+                "city": "Tehran",
+                "image": "event1.jpg",
+                "startDate": "2024-01-01T10:00:00+00:00"
+            }
+        ]
+    }
+}
+```
+
+#### Description:
+- `city`: The city where the events are located.
+- Only events with a non-null and non-empty `image` field are returned.
+- The response includes the `title`, `city`, `image`, and `startDate` of the events.
+
 ---
 
 This document provides the necessary information to test and implement the GraphQL API interactions for event management in your project.
