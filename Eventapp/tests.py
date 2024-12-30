@@ -908,3 +908,129 @@ class TestEventsWithImagesByCity(TestCase):
         for event in events:
             self.assertEqual(event["city"], "Tehran", "All events should be in the city 'Tehran'.")
             self.assertIsNotNone(event["image"], "All events should have an image.")
+
+
+class TestUpdateEventDetail(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربران تستی
+        cls.owner = User.objects.create_user(
+            phone="09123456789",
+            password="ownerpassword"
+        )
+
+        cls.admin = User.objects.create_user(
+            phone="09123456788",
+            password="adminpassword"
+        )
+
+        cls.other_user = User.objects.create_user(
+            phone="09123456787",
+            password="otherpassword"
+        )
+
+        # ساخت ایونت تستی
+        cls.event = Event.objects.create(
+            title="Test Event",
+            event_category="education",
+            about_event="Original description",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            registration_start_date="2023-12-20 10:00:00",
+            registration_end_date="2023-12-30 18:00:00",
+            full_description="Original full description",
+            max_subscribers=100,
+            event_owner=cls.owner
+        )
+
+        # اختصاص نقش ادمین به کاربر
+        UserEventRole.objects.create(user=cls.admin, event=cls.event, role="admin")
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_update_event_by_owner(self):
+        # کوئری برای به‌روزرسانی ایونت توسط Owner
+        query = '''
+        mutation {
+            updateEventDetail(
+                eventId: "%s",
+                phone: "%s",
+                title: "Updated Event Title",
+                aboutEvent: "Updated description",
+                startDate: "2024-01-02 10:00:00"
+            ) {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.owner.phone)
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("updateEventDetail", {})
+
+        # بررسی موفقیت‌آمیز بودن عملیات
+        self.assertTrue(data["success"], "Owner should be able to update all fields.")
+        self.assertEqual(data["message"], "Event updated successfully by the owner.")
+
+        # بررسی تغییرات ایونت
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.title, "Updated Event Title", "Title should be updated.")
+        self.assertEqual(self.event.about_event, "Updated description", "About event should be updated.")
+        self.assertEqual(str(self.event.start_date), "2024-01-02 10:00:00+00:00", "Start date should be updated.")
+
+    def test_update_event_by_admin(self):
+        # کوئری برای به‌روزرسانی ایونت توسط Admin
+        query = '''
+        mutation {
+            updateEventDetail(
+                eventId: "%s",
+                phone: "%s",
+                aboutEvent: "Admin updated description",
+                startDate: "2024-01-03 10:00:00"
+            ) {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.admin.phone)
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("updateEventDetail", {})
+
+        # بررسی موفقیت‌آمیز بودن عملیات
+        self.assertTrue(data["success"], "Admin should be able to update allowed fields.")
+        self.assertEqual(data["message"], "Event updated successfully by the admin.")
+
+        # بررسی تغییرات ایونت
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.about_event, "Admin updated description", "About event should be updated.")
+        self.assertEqual(str(self.event.start_date), "2024-01-03 10:00:00+00:00", "Start date should be updated.")
+
+    def test_update_event_by_other_user(self):
+        # کوئری برای به‌روزرسانی ایونت توسط کاربری که مالک یا ادمین نیست
+        query = '''
+        mutation {
+            updateEventDetail(
+                eventId: "%s",
+                phone: "%s",
+                aboutEvent: "Unauthorized update"
+            ) {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.other_user.phone)
+
+        response = self.client.execute(query)
+        errors = response.get("errors", [])
+        data = response.get("data", {}).get("updateEventDetail", {})
+
+        # بررسی وجود خطا
+        if errors:
+            self.assertIn("You do not have permission to update this event.", errors[0]["message"])
+        else:
+            # بررسی موفقیت‌آمیز نبودن عملیات
+            self.assertFalse(data["success"], "Other users should not be able to update the event.")
+            self.assertEqual(data["message"], "You do not have permission to update this event.")
