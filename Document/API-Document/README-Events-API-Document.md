@@ -602,6 +602,119 @@ query {
 - Only events with a non-null and non-empty `image` field are returned.
 - The response includes the `title`, `city`, `image`, and `startDate` of the events.
 
+
+## Mutation: Update Event Detail
+
+The `updateEventDetail` mutation allows the owner or an admin of an event to update its details.
+
+### Role-Based Permissions:
+- **Owner**: Can update all fields of the event.
+- **Admin**: Can only update the following fields:
+  - `about_event`
+  - `image`
+  - `start_date`
+  - `end_date`
+  - `registration_start_date`
+  - `registration_end_date`
+  - `full_description`
+  - `max_subscribers`
+
+---
+
+### Request (By Owner):
+```graphql
+mutation {
+    updateEventDetail(
+        eventId: "1",
+        phone: "09123456789",
+        title: "Updated Event Title",
+        aboutEvent: "Updated description",
+        startDate: "2024-01-02T10:00:00+00:00"
+    ) {
+        success
+        message
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "updateEventDetail": {
+            "success": true,
+            "message": "Event updated successfully by the owner."
+        }
+    }
+}
+```
+
+---
+
+### Request (By Admin):
+```graphql
+mutation {
+    updateEventDetail(
+        eventId: "1",
+        phone: "09123456788",
+        aboutEvent: "Admin updated description",
+        startDate: "2024-01-03T10:00:00+00:00"
+    ) {
+        success
+        message
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "updateEventDetail": {
+            "success": true,
+            "message": "Event updated successfully by the admin."
+        }
+    }
+}
+```
+
+---
+
+### Request (Unauthorized User):
+```graphql
+mutation {
+    updateEventDetail(
+        eventId: "1",
+        phone: "09123456787",
+        aboutEvent: "Unauthorized update"
+    ) {
+        success
+        message
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "updateEventDetail": {
+            "success": false,
+            "message": "You do not have permission to update this event."
+        }
+    }
+}
+```
+
+---
+
+### Description:
+- `eventId`: The ID of the event to be updated.
+- `phone`: The phone number of the user attempting to update the event.
+- Additional fields depend on the user's role:
+  - **Owner** can update all fields.
+  - **Admin** can update only the allowed fields.
+
 ---
 
 This document provides the necessary information to test and implement the GraphQL API interactions for event management in your project.
