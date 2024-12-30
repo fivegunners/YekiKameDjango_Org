@@ -710,3 +710,201 @@ class TestSearchEventsbyCityandCategory(TestCase):
         # بررسی دسته‌بندی و شهر ایونت‌ها
         for event in events:
             self.assertEqual(event["eventCategory"], "EDUCATION", "All events should have the category 'education'.")
+
+
+class TestSearchEventsbyCityandNeighborhood(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+
+        # ساخت ایونت‌ها
+        Event.objects.create(
+            title="Event 1",
+            event_category="education",
+            city="Tehran",
+            neighborhood="Neighborhood 1",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            about_event="This is Event 1.",
+            province="تهران",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634780",
+            registration_start_date="2024-01-01 10:00:00",
+            registration_end_date="2024-01-04 18:00:00",
+            full_description="This is the full description of Event 1.",
+            max_subscribers=100,
+            event_owner=cls.user
+        )
+
+        Event.objects.create(
+            title="Event 2",
+            event_category="education",
+            city="Tehran",
+            neighborhood="Neighborhood 1",
+            start_date="2024-01-02 10:00:00",
+            end_date="2024-01-06 18:00:00",
+            about_event="This is Event 2.",
+            province="تهران",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634781",
+            registration_start_date="2024-01-02 10:00:00",
+            registration_end_date="2024-01-05 18:00:00",
+            full_description="This is the full description of Event 2.",
+            max_subscribers=50,
+            event_owner=cls.user
+        )
+
+        Event.objects.create(
+            title="Event 3",
+            event_category="sport",
+            city="Tehran",
+            neighborhood="Neighborhood 2",
+            start_date="2024-01-03 10:00:00",
+            end_date="2024-01-07 18:00:00",
+            about_event="This is Event 3.",
+            province="تهران",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634782",
+            registration_start_date="2024-01-03 10:00:00",
+            registration_end_date="2024-01-06 18:00:00",
+            full_description="This is the full description of Event 3.",
+            max_subscribers=30,
+            event_owner=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_events_by_city_and_neighborhood(self):
+        # کوئری برای دریافت ایونت‌ها
+        query = '''
+        query {
+            eventsByCityAndNeighborhood(city: "Tehran", neighborhood: "Neighborhood 1") {
+                title
+                city
+                neighborhood
+                startDate
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        events = response.get("data", {}).get("eventsByCityAndNeighborhood", [])
+
+        # بررسی تعداد ایونت‌های بازگشتی
+        self.assertEqual(len(events), 2, "There should be 2 events matching the city and neighborhood.")
+
+        # بررسی ترتیب ایونت‌ها بر اساس start_date
+        self.assertEqual(events[0]["title"], "Event 2", "The most recently started event should come first.")
+        self.assertEqual(events[1]["title"], "Event 1", "The second event should be Event 1.")
+
+        # بررسی شهر و محله ایونت‌ها
+        for event in events:
+            self.assertEqual(event["city"], "Tehran", "All events should be in the city 'Tehran'.")
+            self.assertEqual(event["neighborhood"], "Neighborhood 1", "All events should be in the neighborhood 'Neighborhood 1'.")
+
+
+class TestEventsWithImagesByCity(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+
+        # ساخت ایونت‌ها
+        Event.objects.create(
+            title="Event 1",
+            event_category="education",
+            city="Tehran",
+            image="event1.jpg",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            about_event="This is Event 1.",
+            province="تهران",
+            neighborhood="Neighborhood 1",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634780",
+            registration_start_date="2024-01-01 10:00:00",
+            registration_end_date="2024-01-04 18:00:00",
+            full_description="This is the full description of Event 1.",
+            max_subscribers=100,
+            event_owner=cls.user
+        )
+
+        Event.objects.create(
+            title="Event 2",
+            event_category="education",
+            city="Tehran",
+            image="",
+            start_date="2024-01-02 10:00:00",
+            end_date="2024-01-06 18:00:00",
+            about_event="This is Event 2.",
+            province="تهران",
+            neighborhood="Neighborhood 2",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634781",
+            registration_start_date="2024-01-02 10:00:00",
+            registration_end_date="2024-01-05 18:00:00",
+            full_description="This is the full description of Event 2.",
+            max_subscribers=50,
+            event_owner=cls.user
+        )
+
+        Event.objects.create(
+            title="Event 3",
+            event_category="sport",
+            city="Tehran",
+            image="event3.jpg",
+            start_date="2024-01-03 10:00:00",
+            end_date="2024-01-07 18:00:00",
+            about_event="This is Event 3.",
+            province="تهران",
+            neighborhood="Neighborhood 3",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634782",
+            registration_start_date="2024-01-03 10:00:00",
+            registration_end_date="2024-01-06 18:00:00",
+            full_description="This is the full description of Event 3.",
+            max_subscribers=30,
+            event_owner=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_events_with_images_by_city(self):
+        # کوئری برای دریافت ایونت‌ها
+        query = '''
+        query {
+            eventsWithImagesByCity(city: "Tehran") {
+                title
+                city
+                image
+                startDate
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        events = response.get("data", {}).get("eventsWithImagesByCity", [])
+        print(events)
+
+        # بررسی تعداد ایونت‌های بازگشتی
+        self.assertEqual(len(events), 2, "There should be 2 events with images in the city.")
+
+        # بررسی ترتیب ایونت‌ها بر اساس start_date
+        self.assertEqual(events[0]["title"], "Event 3", "The most recently started event should come first.")
+        self.assertEqual(events[1]["title"], "Event 1", "The second event should be Event 1.")
+
+        # بررسی شهر و داشتن تصویر
+        for event in events:
+            self.assertEqual(event["city"], "Tehran", "All events should be in the city 'Tehran'.")
+            self.assertIsNotNone(event["image"], "All events should have an image.")

@@ -64,6 +64,9 @@ class Query(graphene.ObjectType):
     related_events = graphene.List(EventType, event_id=graphene.ID(required=True))
     events_by_city_and_category = graphene.List(EventType, city=graphene.String(required=True),
                                                 category=graphene.String(required=True))
+    events_by_city_and_neighborhood = graphene.List(EventType, city=graphene.String(required=True),
+                                                    neighborhood=graphene.String(required=True))
+    events_with_images_by_city = graphene.List(EventType, city=graphene.String(required=True))
 
     def resolve_search_events_by_city(self, info, city):
         return Event.objects.filter(city=city).order_by('-start_date')
@@ -103,6 +106,12 @@ class Query(graphene.ObjectType):
 
     def resolve_events_by_city_and_category(self, info, city, category):
         return Event.objects.filter(city=city, event_category=category).order_by('-start_date')
+
+    def resolve_events_by_city_and_neighborhood(self, info, city, neighborhood):
+        return Event.objects.filter(city=city, neighborhood=neighborhood).order_by('-start_date')
+
+    def resolve_events_with_images_by_city(self, info, city):
+        return Event.objects.filter(city=city).exclude(image__isnull=True).exclude(image="").order_by('-start_date')
 
 
 class CreateEvent(graphene.Mutation):
