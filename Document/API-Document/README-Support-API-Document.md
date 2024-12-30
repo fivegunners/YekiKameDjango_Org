@@ -124,6 +124,127 @@ query {
   - `title`: The title of the notice.
   - `content`: The content of the notice.
 
+
+## Ticket Mutations
+
+### Create a Ticket
+
+The `createTicket` mutation allows you to create a new ticket.
+
+#### Request:
+```graphql
+mutation {
+    createTicket(
+        title: "Sample Ticket",
+        content: "This is the content of the ticket.",
+        department: "support",
+        priority: "high",
+        status: "waiting",
+        phone: "09123456789"
+    ) {
+        ticket {
+            id
+            title
+            content
+            department
+            priority
+            status
+            createdBy {
+                phone
+            }
+        }
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "createTicket": {
+            "ticket": {
+                "id": "1",
+                "title": "Sample Ticket",
+                "content": "This is the content of the ticket.",
+                "department": "support",
+                "priority": "high",
+                "status": "waiting",
+                "createdBy": {
+                    "phone": "09123456789"
+                }
+            }
+        }
+    }
+}
+```
+
+#### Description:
+- `title`: The title of the ticket.
+- `content`: The content or description of the ticket.
+- `department`: The department the ticket is assigned to.
+- `priority`: The priority level of the ticket (`low`, `medium`, `high`).
+- `status`: The current status of the ticket (`waiting`, `answered`, etc.).
+- `phone`: The phone number of the user creating the ticket.
+
+---
+
+### Create a Ticket Message
+
+The `createTicketMessage` mutation allows you to add a new message to an existing ticket.
+
+#### Request:
+```graphql
+mutation {
+    createTicketMessage(
+        ticketId: "1",
+        phone: "09123456789",
+        message: "This is a reply to the ticket."
+    ) {
+        ticketMessage {
+            id
+            message
+            ticket {
+                id
+                title
+                status
+            }
+            user {
+                phone
+            }
+        }
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "createTicketMessage": {
+            "ticketMessage": {
+                "id": "1",
+                "message": "This is a reply to the ticket.",
+                "ticket": {
+                    "id": "1",
+                    "title": "Sample Ticket",
+                    "status": "answered"
+                },
+                "user": {
+                    "phone": "09123456789"
+                }
+            }
+        }
+    }
+}
+```
+
+#### Description:
+- `ticketId`: The ID of the ticket to which the message is added.
+- `phone`: The phone number of the user adding the message.
+- `message`: The content of the message being added.
+- The response includes details about the message, the ticket it belongs to, and the user who added the message.
+
+
 ---
 
 This document provides all necessary information to test and implement the GraphQL API interactions for FAQ management and contact form submissions in your project.
