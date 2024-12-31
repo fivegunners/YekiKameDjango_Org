@@ -4,6 +4,7 @@ from graphene_django.types import DjangoObjectType
 from .models import Event, Review, Comment, EventFeature, UserEventRole
 from userapp.models import User
 import random
+from django.core.exceptions import PermissionDenied
 
 
 class EventType(DjangoObjectType):
@@ -62,6 +63,11 @@ class Query(graphene.ObjectType):
     comments_by_review = graphene.List(CommentType, review_id=graphene.ID(required=True))
     event_details = graphene.Field(EventDetailResponseType, event_id=graphene.ID(required=True))
     related_events = graphene.List(EventType, event_id=graphene.ID(required=True))
+    events_by_city_and_category = graphene.List(EventType, city=graphene.String(required=True),
+                                                category=graphene.String(required=True))
+    events_by_city_and_neighborhood = graphene.List(EventType, city=graphene.String(required=True),
+                                                    neighborhood=graphene.String(required=True))
+    events_with_images_by_city = graphene.List(EventType, city=graphene.String(required=True))
 
     def resolve_search_events_by_city(self, info, city):
         return Event.objects.filter(city=city).order_by('-start_date')
@@ -98,6 +104,15 @@ class Query(graphene.ObjectType):
             return related_events
         except Event.DoesNotExist:
             return []
+
+    def resolve_events_by_city_and_category(self, info, city, category):
+        return Event.objects.filter(city=city, event_category=category).order_by('-start_date')
+
+    def resolve_events_by_city_and_neighborhood(self, info, city, neighborhood):
+        return Event.objects.filter(city=city, neighborhood=neighborhood).order_by('-start_date')
+
+    def resolve_events_with_images_by_city(self, info, city):
+        return Event.objects.filter(city=city).exclude(image__isnull=True).exclude(image="").order_by('-start_date')
 
 
 class CreateEvent(graphene.Mutation):
@@ -231,10 +246,71 @@ class CreateComment(graphene.Mutation):
         return CreateComment(comment=comment)
 
 
+class UpdateEventDetail(graphene.Mutation):
+    class Arguments:
+        event_id = graphene.ID(required=True)
+        phone = graphene.String(required=True)
+        title = graphene.String()
+        event_category = graphene.String()
+        about_event = graphene.String()
+        image = graphene.String()
+        start_date = graphene.DateTime()
+        end_date = graphene.DateTime()
+        registration_start_date = graphene.DateTime()
+        registration_end_date = graphene.DateTime()
+        full_description = graphene.String()
+        max_subscribers = graphene.Int()
+        province = graphene.String()
+        city = graphene.String()
+        neighborhood = graphene.String()
+        postal_address = graphene.String()
+        postal_code = graphene.String()
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, event_id, phone, **kwargs):
+        try:
+            # پیدا کردن ایونت و کاربر
+            event = Event.objects.get(id=event_id)
+            user = User.objects.get(phone=phone)
+
+            # بررسی نقش کاربر
+            if event.event_owner == user:
+                # اگر Owner باشد، همه فیلدها قابل ویرایش است
+                for field, value in kwargs.items():
+                    if value is not None:
+                        setattr(event, field, value)
+                event.save()
+                return UpdateEventDetail(success=True, message="Event updated successfully by the owner.")
+
+            elif UserEventRole.objects.filter(user=user, event=event, role='admin').exists():
+                # اگر Admin باشد، فقط فیلدهای خاص قابل ویرایش است
+                allowed_fields = [
+                    'about_event', 'image', 'start_date', 'end_date',
+                    'registration_start_date', 'registration_end_date',
+                    'full_description', 'max_subscribers'
+                ]
+                for field, value in kwargs.items():
+                    if field in allowed_fields and value is not None:
+                        setattr(event, field, value)
+                event.save()
+                return UpdateEventDetail(success=True, message="Event updated successfully by the admin.")
+
+            else:
+                raise PermissionDenied("You do not have permission to update this event.")
+
+        except Event.DoesNotExist:
+            return UpdateEventDetail(success=False, message="Event not found.")
+        except User.DoesNotExist:
+            return UpdateEventDetail(success=False, message="User not found.")
+
+
 class Mutation(graphene.ObjectType):
     create_event = CreateEvent.Field()
     create_review = CreateReview.Field()
     create_comment = CreateComment.Field()
+    update_event_detail = UpdateEventDetail.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

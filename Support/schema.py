@@ -11,6 +11,7 @@ class FAQType(DjangoObjectType):
         model = FAQ
         fields = ('question_title', 'question_answer', 'created_at')
 
+
 class NoticeType(DjangoObjectType):
     class Meta:
         model = Notice
@@ -80,7 +81,7 @@ class CreateTicket(graphene.Mutation):
         department = graphene.String(required=True)
         priority = graphene.String(default_value='medium')
         status = graphene.String(default_value='waiting')
-        phone = graphene.String(required=True)  # تغییر از created_by_id به phone
+        phone = graphene.String(required=True)
 
     def mutate(self, info, title, content, department, priority, status, phone):
         # بررسی کاربر بر اساس شماره تلفن
@@ -99,9 +100,60 @@ class CreateTicket(graphene.Mutation):
         return CreateTicket(ticket=ticket)
 
 
+class UserType(DjangoObjectType):
+    class Meta:
+        model = User
+        fields = ("id", "phone", "fullname", "email")
+
+
+class TicketMessageType(DjangoObjectType):
+    class Meta:
+        model = TicketMessage
+        fields = "__all__"
+
+    user = graphene.Field(UserType)
+
+    def resolve_user(self, info):
+        return self.user
+
+
+class CreateTicketMessage(graphene.Mutation):
+    ticket_message = graphene.Field(TicketMessageType)
+
+    class Arguments:
+        ticket_id = graphene.ID(required=True)
+        phone = graphene.String(required=True)
+        message = graphene.String(required=True)
+
+    def mutate(self, info, ticket_id, phone, message):
+        try:
+            # بررسی تیکت موجود
+            ticket = Ticket.objects.get(id=ticket_id)
+            # بررسی کاربر موجود
+            user = User.objects.get(phone=phone)
+
+            # ایجاد پیام جدید برای تیکت
+            ticket_message = TicketMessage.objects.create(
+                ticket=ticket,
+                user=user,
+                message=message
+            )
+
+            # بروزرسانی وضعیت تیکت
+            ticket.status = 'answered'
+            ticket.save()
+
+            return CreateTicketMessage(ticket_message=ticket_message)
+        except Ticket.DoesNotExist:
+            raise Exception("Ticket not found.")
+        except User.DoesNotExist:
+            raise Exception("User not found.")
+
+
 class Mutation(graphene.ObjectType):
     create_contact_us = CreateContactUs.Field()
     create_ticket = CreateTicket.Field()
+    create_ticket_message = CreateTicketMessage.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

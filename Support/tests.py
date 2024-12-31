@@ -37,7 +37,7 @@ class FAQQueryTest(TestCase):
         '''
         # اجرای کوئری
         response = self.client.execute(query)
-        print(response)
+        #print(response)
 
         # چک کردن پاسخ کوئری
         data = response.get("data").get("allFaqs")
@@ -144,7 +144,7 @@ class CreateTicketTestCase(TestCase):
 
         # ارسال درخواست GraphQL
         response = self.client.execute(mutation)
-        print(response)
+        #print(response)
 
         ticket_data = response.get("data", {}).get("createTicket", {}).get("ticket")
 
@@ -217,3 +217,100 @@ class QueryNotice(TestCase):
         self.assertEqual(notices[0]["content"], "This is the first active notice.", "The first notice content should match.")
         self.assertEqual(notices[1]["title"], "Active Notice 2", "The second notice title should match.")
         self.assertEqual(notices[1]["content"], "This is the second active notice.", "The second notice content should match.")
+
+
+class TestCreateTicketMessage(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+
+        # ساخت تیکت تستی
+        cls.ticket = Ticket.objects.create(
+            title="Test Ticket",
+            content="This is a test ticket.",
+            department="support",
+            priority="high",
+            status="waiting",
+            created_by=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_create_ticket_message(self):
+        # کوئری برای ایجاد پیام جدید برای تیکت
+        query = '''
+        mutation {
+            createTicketMessage(ticketId: "%s", phone: "%s", message: "This is a test reply.") {
+                ticketMessage {
+                    id
+                    message
+                    ticket {
+                        id
+                        title
+                        status
+                    }
+                    user {
+                        phone
+                    }
+                }
+            }
+        }
+        ''' % (self.ticket.id, self.user.phone)
+
+        response = self.client.execute(query)
+        print(response)
+        ticket_message_data = response.get("data", {}).get("createTicketMessage", {}).get("ticketMessage", {})
+
+        # بررسی اینکه پیام ایجاد شده است
+        self.assertEqual(ticket_message_data["message"], "This is a test reply.", "Message content should match.")
+
+        # بررسی اطلاعات تیکت
+        self.assertEqual(ticket_message_data["ticket"]["id"], str(self.ticket.id), "Ticket ID should match.")
+        self.assertEqual(ticket_message_data["ticket"]["status"], "ANSWERED", "Ticket status should be updated to 'answered'.")
+
+        # بررسی اطلاعات کاربر
+        self.assertEqual(ticket_message_data["user"]["phone"], self.user.phone, "User phone should match.")
+
+    def test_create_ticket_message_ticket_not_found(self):
+        # کوئری برای تیکتی که وجود ندارد
+        query = '''
+        mutation {
+            createTicketMessage(ticketId: "9999", phone: "%s", message: "This is a test reply.") {
+                ticketMessage {
+                    id
+                }
+            }
+        }
+        ''' % self.user.phone
+
+        response = self.client.execute(query)
+        errors = response.get("errors", [])
+
+        # بررسی وجود خطا
+        self.assertTrue(errors, "There should be an error for non-existent ticket.")
+        self.assertIn("Ticket not found.", errors[0]["message"], "Error message should indicate ticket not found.")
+
+    def test_create_ticket_message_user_not_found(self):
+        # کوئری برای کاربری که وجود ندارد
+        query = '''
+        mutation {
+            createTicketMessage(ticketId: "%s", phone: "09111111111", message: "This is a test reply.") {
+                ticketMessage {
+                    id
+                }
+            }
+        }
+        ''' % self.ticket.id
+
+        response = self.client.execute(query)
+        errors = response.get("errors", [])
+
+        # بررسی وجود خطا
+        self.assertTrue(errors, "There should be an error for non-existent user.")
+        self.assertIn("User not found.", errors[0]["message"], "Error message should indicate user not found.")

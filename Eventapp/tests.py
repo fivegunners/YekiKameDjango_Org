@@ -609,3 +609,428 @@ class RelatedEventsTest(TestCase):
         # بررسی اینکه همه ایونت‌های بازگشتی از یک دسته‌بندی هستند
         for event in related_events:
             self.assertEqual(event["eventCategory"], "EDUCATION", "All related events should have the same category.")
+
+
+class TestSearchEventsbyCityandCategory(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+
+        # ساخت ایونت‌ها
+        event1 = Event.objects.create(
+            title="Event 1",
+            event_category="education",
+            city="Tehran",
+            about_event="This is Event 1.",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            province="تهران",
+            neighborhood="تهرانپارس",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634780",
+            registration_start_date="2024-01-01 10:00:00",
+            registration_end_date="2024-01-04 18:00:00",
+            full_description="This is the full description of Event 1.",
+            max_subscribers=100,
+            event_owner=cls.user
+        )
+        event1.start_date = "2024-01-01 10:00:00"
+        event1.save()
+
+        event2 = Event.objects.create(
+            title="Event 2",
+            event_category="education",
+            city="Tehran",
+            about_event="This is Event 2.",
+            start_date="2024-01-02 10:00:00",
+            end_date="2024-01-06 18:00:00",
+            province="تهران",
+            neighborhood="تهرانپارس",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634781",
+            registration_start_date="2024-01-02 10:00:00",
+            registration_end_date="2024-01-05 18:00:00",
+            full_description="This is the full description of Event 2.",
+            max_subscribers=50,
+            event_owner=cls.user
+        )
+        event2.start_date = "2024-01-02 10:00:00"
+        event2.save()
+
+        event3 = Event.objects.create(
+            title="Event 3",
+            event_category="sport",
+            city="Tehran",
+            about_event="This is Event 3.",
+            start_date="2024-01-03 10:00:00",
+            end_date="2024-01-07 18:00:00",
+            province="تهران",
+            neighborhood="تهرانپارس",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634782",
+            registration_start_date="2024-01-03 10:00:00",
+            registration_end_date="2024-01-06 18:00:00",
+            full_description="This is the full description of Event 3.",
+            max_subscribers=30,
+            event_owner=cls.user
+        )
+        event3.start_date = "2024-01-03 10:00:00"
+        event3.save()
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_events_by_city_and_category(self):
+        # کوئری برای دریافت ایونت‌ها
+        query = '''
+        query {
+            eventsByCityAndCategory(city: "Tehran", category: "education") {
+                title
+                eventCategory
+                startDate
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        events = response.get("data", {}).get("eventsByCityAndCategory", [])
+
+        # بررسی تعداد ایونت‌های بازگشتی
+        self.assertEqual(len(events), 2, "There should be 2 events matching the city and category.")
+
+        # بررسی ترتیب ایونت‌ها بر اساس start_date
+        self.assertEqual(events[0]["title"], "Event 2", "The most recently started event should come first.")
+        self.assertEqual(events[1]["title"], "Event 1", "The second event should be Event 1.")
+
+        # بررسی دسته‌بندی و شهر ایونت‌ها
+        for event in events:
+            self.assertEqual(event["eventCategory"], "EDUCATION", "All events should have the category 'education'.")
+
+
+class TestSearchEventsbyCityandNeighborhood(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+
+        # ساخت ایونت‌ها
+        Event.objects.create(
+            title="Event 1",
+            event_category="education",
+            city="Tehran",
+            neighborhood="Neighborhood 1",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            about_event="This is Event 1.",
+            province="تهران",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634780",
+            registration_start_date="2024-01-01 10:00:00",
+            registration_end_date="2024-01-04 18:00:00",
+            full_description="This is the full description of Event 1.",
+            max_subscribers=100,
+            event_owner=cls.user
+        )
+
+        Event.objects.create(
+            title="Event 2",
+            event_category="education",
+            city="Tehran",
+            neighborhood="Neighborhood 1",
+            start_date="2024-01-02 10:00:00",
+            end_date="2024-01-06 18:00:00",
+            about_event="This is Event 2.",
+            province="تهران",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634781",
+            registration_start_date="2024-01-02 10:00:00",
+            registration_end_date="2024-01-05 18:00:00",
+            full_description="This is the full description of Event 2.",
+            max_subscribers=50,
+            event_owner=cls.user
+        )
+
+        Event.objects.create(
+            title="Event 3",
+            event_category="sport",
+            city="Tehran",
+            neighborhood="Neighborhood 2",
+            start_date="2024-01-03 10:00:00",
+            end_date="2024-01-07 18:00:00",
+            about_event="This is Event 3.",
+            province="تهران",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634782",
+            registration_start_date="2024-01-03 10:00:00",
+            registration_end_date="2024-01-06 18:00:00",
+            full_description="This is the full description of Event 3.",
+            max_subscribers=30,
+            event_owner=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_events_by_city_and_neighborhood(self):
+        # کوئری برای دریافت ایونت‌ها
+        query = '''
+        query {
+            eventsByCityAndNeighborhood(city: "Tehran", neighborhood: "Neighborhood 1") {
+                title
+                city
+                neighborhood
+                startDate
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        events = response.get("data", {}).get("eventsByCityAndNeighborhood", [])
+
+        # بررسی تعداد ایونت‌های بازگشتی
+        self.assertEqual(len(events), 2, "There should be 2 events matching the city and neighborhood.")
+
+        # بررسی ترتیب ایونت‌ها بر اساس start_date
+        self.assertEqual(events[0]["title"], "Event 2", "The most recently started event should come first.")
+        self.assertEqual(events[1]["title"], "Event 1", "The second event should be Event 1.")
+
+        # بررسی شهر و محله ایونت‌ها
+        for event in events:
+            self.assertEqual(event["city"], "Tehran", "All events should be in the city 'Tehran'.")
+            self.assertEqual(event["neighborhood"], "Neighborhood 1", "All events should be in the neighborhood 'Neighborhood 1'.")
+
+
+class TestEventsWithImagesByCity(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+
+        # ساخت ایونت‌ها
+        Event.objects.create(
+            title="Event 1",
+            event_category="education",
+            city="Tehran",
+            image="event1.jpg",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            about_event="This is Event 1.",
+            province="تهران",
+            neighborhood="Neighborhood 1",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634780",
+            registration_start_date="2024-01-01 10:00:00",
+            registration_end_date="2024-01-04 18:00:00",
+            full_description="This is the full description of Event 1.",
+            max_subscribers=100,
+            event_owner=cls.user
+        )
+
+        Event.objects.create(
+            title="Event 2",
+            event_category="education",
+            city="Tehran",
+            image="",
+            start_date="2024-01-02 10:00:00",
+            end_date="2024-01-06 18:00:00",
+            about_event="This is Event 2.",
+            province="تهران",
+            neighborhood="Neighborhood 2",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634781",
+            registration_start_date="2024-01-02 10:00:00",
+            registration_end_date="2024-01-05 18:00:00",
+            full_description="This is the full description of Event 2.",
+            max_subscribers=50,
+            event_owner=cls.user
+        )
+
+        Event.objects.create(
+            title="Event 3",
+            event_category="sport",
+            city="Tehran",
+            image="event3.jpg",
+            start_date="2024-01-03 10:00:00",
+            end_date="2024-01-07 18:00:00",
+            about_event="This is Event 3.",
+            province="تهران",
+            neighborhood="Neighborhood 3",
+            postal_address="تهرانپارس، خیابان ۱۷۴ غربی",
+            postal_code="1592634782",
+            registration_start_date="2024-01-03 10:00:00",
+            registration_end_date="2024-01-06 18:00:00",
+            full_description="This is the full description of Event 3.",
+            max_subscribers=30,
+            event_owner=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_events_with_images_by_city(self):
+        # کوئری برای دریافت ایونت‌ها
+        query = '''
+        query {
+            eventsWithImagesByCity(city: "Tehran") {
+                title
+                city
+                image
+                startDate
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        events = response.get("data", {}).get("eventsWithImagesByCity", [])
+        print(events)
+
+        # بررسی تعداد ایونت‌های بازگشتی
+        self.assertEqual(len(events), 2, "There should be 2 events with images in the city.")
+
+        # بررسی ترتیب ایونت‌ها بر اساس start_date
+        self.assertEqual(events[0]["title"], "Event 3", "The most recently started event should come first.")
+        self.assertEqual(events[1]["title"], "Event 1", "The second event should be Event 1.")
+
+        # بررسی شهر و داشتن تصویر
+        for event in events:
+            self.assertEqual(event["city"], "Tehran", "All events should be in the city 'Tehran'.")
+            self.assertIsNotNone(event["image"], "All events should have an image.")
+
+
+class TestUpdateEventDetail(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربران تستی
+        cls.owner = User.objects.create_user(
+            phone="09123456789",
+            password="ownerpassword"
+        )
+
+        cls.admin = User.objects.create_user(
+            phone="09123456788",
+            password="adminpassword"
+        )
+
+        cls.other_user = User.objects.create_user(
+            phone="09123456787",
+            password="otherpassword"
+        )
+
+        # ساخت ایونت تستی
+        cls.event = Event.objects.create(
+            title="Test Event",
+            event_category="education",
+            about_event="Original description",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            registration_start_date="2023-12-20 10:00:00",
+            registration_end_date="2023-12-30 18:00:00",
+            full_description="Original full description",
+            max_subscribers=100,
+            event_owner=cls.owner
+        )
+
+        # اختصاص نقش ادمین به کاربر
+        UserEventRole.objects.create(user=cls.admin, event=cls.event, role="admin")
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_update_event_by_owner(self):
+        # کوئری برای به‌روزرسانی ایونت توسط Owner
+        query = '''
+        mutation {
+            updateEventDetail(
+                eventId: "%s",
+                phone: "%s",
+                title: "Updated Event Title",
+                aboutEvent: "Updated description",
+                startDate: "2024-01-02 10:00:00"
+            ) {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.owner.phone)
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("updateEventDetail", {})
+
+        # بررسی موفقیت‌آمیز بودن عملیات
+        self.assertTrue(data["success"], "Owner should be able to update all fields.")
+        self.assertEqual(data["message"], "Event updated successfully by the owner.")
+
+        # بررسی تغییرات ایونت
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.title, "Updated Event Title", "Title should be updated.")
+        self.assertEqual(self.event.about_event, "Updated description", "About event should be updated.")
+        self.assertEqual(str(self.event.start_date), "2024-01-02 10:00:00+00:00", "Start date should be updated.")
+
+    def test_update_event_by_admin(self):
+        # کوئری برای به‌روزرسانی ایونت توسط Admin
+        query = '''
+        mutation {
+            updateEventDetail(
+                eventId: "%s",
+                phone: "%s",
+                aboutEvent: "Admin updated description",
+                startDate: "2024-01-03 10:00:00"
+            ) {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.admin.phone)
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("updateEventDetail", {})
+
+        # بررسی موفقیت‌آمیز بودن عملیات
+        self.assertTrue(data["success"], "Admin should be able to update allowed fields.")
+        self.assertEqual(data["message"], "Event updated successfully by the admin.")
+
+        # بررسی تغییرات ایونت
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.about_event, "Admin updated description", "About event should be updated.")
+        self.assertEqual(str(self.event.start_date), "2024-01-03 10:00:00+00:00", "Start date should be updated.")
+
+    def test_update_event_by_other_user(self):
+        # کوئری برای به‌روزرسانی ایونت توسط کاربری که مالک یا ادمین نیست
+        query = '''
+        mutation {
+            updateEventDetail(
+                eventId: "%s",
+                phone: "%s",
+                aboutEvent: "Unauthorized update"
+            ) {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.other_user.phone)
+
+        response = self.client.execute(query)
+        errors = response.get("errors", [])
+        data = response.get("data", {}).get("updateEventDetail", {})
+
+        # بررسی وجود خطا
+        if errors:
+            self.assertIn("You do not have permission to update this event.", errors[0]["message"])
+        else:
+            # بررسی موفقیت‌آمیز نبودن عملیات
+            self.assertFalse(data["success"], "Other users should not be able to update the event.")
+            self.assertEqual(data["message"], "You do not have permission to update this event.")
