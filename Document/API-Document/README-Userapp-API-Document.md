@@ -286,6 +286,60 @@ mutation {
 }
 ```
 
+
+## Query: Fetch User Details
+
+The `user` query allows you to fetch details of a user by providing their phone number.
+
+### Request:
+```graphql
+query {
+    user(phone: "09123456789") {
+        id
+        phone
+        email
+        fullname
+        isActive
+        isAdmin
+    }
+}
+```
+
+### Response (If User Exists):
+```json
+{
+    "data": {
+        "user": {
+            "id": "1",
+            "phone": "09123456789",
+            "email": "example@example.com",
+            "fullname": "John Doe",
+            "isActive": true,
+            "isAdmin": false
+        }
+    }
+}
+```
+
+### Response (If User Does Not Exist):
+```json
+{
+    "data": {
+        "user": null
+    }
+}
+```
+
+### Description:
+- `phone`: The phone number of the user to fetch.
+- The response includes:
+  - `id`: The unique identifier of the user.
+  - `phone`: The user's phone number.
+  - `email`: The user's email address.
+  - `fullname`: The full name of the user.
+  - `isActive`: Indicates whether the user's account is active.
+  - `isAdmin`: Indicates whether the user has admin privileges.
+
 ---
 
 This document provides all necessary information to test and implement the GraphQL API interactions for user authentication in your project.
