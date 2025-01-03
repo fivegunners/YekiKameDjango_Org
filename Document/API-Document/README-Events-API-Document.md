@@ -1000,6 +1000,73 @@ If no join request exists for the user and event:
   - Approved as Admin (`is_approved=True` and `role=admin`): "Your request has been approved as an admin user."
   - No Request Found: "No join request found for this event."
 
+
+## Mutation: Delete Event
+
+The `deleteEvent` mutation allows the owner of an event to delete it based on its ID.
+
+### Request:
+```graphql
+mutation {
+    deleteEvent(eventId: "1", ownerPhone: "09123456789") {
+        success
+        message
+    }
+}
+```
+
+### Responses:
+
+#### Successful Deletion:
+If the owner successfully deletes the event:
+```json
+{
+    "data": {
+        "deleteEvent": {
+            "success": true,
+            "message": "Event deleted successfully."
+        }
+    }
+}
+```
+
+#### Unauthorized User:
+If a user other than the owner attempts to delete the event:
+```json
+{
+    "data": {
+        "deleteEvent": {
+            "success": false,
+            "message": "You are not authorized to delete this event."
+        }
+    }
+}
+```
+
+#### Non-Existent Event:
+If the event does not exist:
+```json
+{
+    "data": {
+        "deleteEvent": {
+            "success": false,
+            "message": "Event not found."
+        }
+    }
+}
+```
+
+---
+
+### Description:
+- `eventId`: The ID of the event to be deleted.
+- `ownerPhone`: The phone number of the user attempting to delete the event.
+
+### Behavior:
+- **Successful Deletion:** If the user is the owner of the event, the event is deleted, and a success message is returned.
+- **Unauthorized User:** If the user is not the owner, the deletion is blocked, and an error message is returned.
+- **Non-Existent Event:** If the event ID does not match any existing event, an error message is returned.
+
 ---
 
 This document provides the necessary information to test and implement the GraphQL API interactions for event management in your project.

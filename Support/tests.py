@@ -314,3 +314,168 @@ class TestCreateTicketMessage(TestCase):
         # بررسی وجود خطا
         self.assertTrue(errors, "There should be an error for non-existent user.")
         self.assertIn("User not found.", errors[0]["message"], "Error message should indicate user not found.")
+
+
+class TestUserTicketsQuery(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="userpassword"
+        )
+
+        # ساخت تیکت‌های تستی با تاریخ‌های دستی
+        Ticket.objects.create(
+            title="Ticket 1",
+            department="technical",
+            status="waiting",
+            priority="high",
+            created_by=cls.user,
+            created_at="2024-01-01 10:00:00"
+        )
+        Ticket.objects.create(
+            title="Ticket 2",
+            department="financial",
+            status="answered",
+            priority="medium",
+            created_by=cls.user,
+            created_at="2024-01-02 10:00:00"
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_user_tickets_query(self):
+        query = '''
+        query {
+            userTickets(phone: "09123456789") {
+                title
+                department
+                status
+                priority
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        tickets = response.get("data", {}).get("userTickets", [])
+
+        # بررسی تعداد تیکت‌ها
+        self.assertEqual(len(tickets), 2, "There should be 2 tickets for the user.")
+
+        # بررسی اطلاعات تیکت‌ها
+        self.assertEqual(tickets[0]["title"], "Ticket 2", "The first ticket title should match.")
+        self.assertEqual(tickets[0]["department"], "FINANCIAL", "The first ticket department should match.")
+        self.assertEqual(tickets[0]["status"], "ANSWERED", "The first ticket status should match.")
+        self.assertEqual(tickets[0]["priority"], "MEDIUM", "The first ticket priority should match.")
+
+        self.assertEqual(tickets[1]["title"], "Ticket 1", "The second ticket title should match.")
+        self.assertEqual(tickets[1]["department"], "TECHNICAL", "The second ticket department should match.")
+        self.assertEqual(tickets[1]["status"], "WAITING", "The second ticket status should match.")
+        self.assertEqual(tickets[1]["priority"], "HIGH", "The second ticket priority should match.")
+
+    def test_user_tickets_no_user_found(self):
+        query = '''
+        query {
+            userTickets(phone: "09111234567") {
+                title
+                department
+                status
+                priority
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        tickets = response.get("data", {}).get("userTickets", [])
+
+        # بررسی اینکه هیچ تیکتی یافت نشده است
+        self.assertEqual(len(tickets), 0, "There should be no tickets for a non-existent user.")
+
+
+class TestTicketMessagesQuery(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="userpassword"
+        )
+
+        # ساخت تیکت تستی
+        cls.ticket = Ticket.objects.create(
+            title="Test Ticket",
+            department="technical",
+            status="waiting",
+            priority="high",
+            created_by=cls.user
+        )
+
+        # ساخت پیام‌های تستی مربوط به تیکت
+        TicketMessage.objects.create(
+            ticket=cls.ticket,
+            user=cls.user,
+            message="First message",
+            created_at="2024-01-01 10:00:00"
+        )
+        TicketMessage.objects.create(
+            ticket=cls.ticket,
+            user=cls.user,
+            message="Second message",
+            created_at="2024-01-02 12:00:00"
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_ticket_messages_query(self):
+        query = '''
+        query {
+            ticketMessages(ticketId: "%s") {
+                id
+                message
+                createdAt
+                user {
+                    phone
+                    fullname
+                }
+            }
+        }
+        ''' % self.ticket.id
+
+        response = self.client.execute(query)
+        messages = response.get("data", {}).get("ticketMessages", [])
+
+        # بررسی تعداد پیام‌ها
+        self.assertEqual(len(messages), 2, "There should be 2 messages for the ticket.")
+
+        # بررسی اطلاعات پیام‌ها
+        self.assertEqual(messages[0]["message"], "First message", "The first message content should match.")
+        self.assertEqual(messages[0]["user"]["phone"], "09123456789", "The first message user phone should match.")
+
+        self.assertEqual(messages[1]["message"], "Second message", "The second message content should match.")
+        self.assertEqual(messages[1]["user"]["phone"], "09123456789", "The second message user phone should match.")
+
+    def test_ticket_messages_no_ticket_found(self):
+        query = '''
+        query {
+            ticketMessages(ticketId: "9999") {
+                id
+                message
+                createdAt
+                user {
+                    phone
+                    fullname
+                }
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        messages = response.get("data", {}).get("ticketMessages", [])
+
+        # بررسی اینکه هیچ پیامی یافت نشده است
+        self.assertEqual(len(messages), 0, "There should be no messages for a non-existent ticket.")
