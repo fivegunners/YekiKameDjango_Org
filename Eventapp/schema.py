@@ -4,6 +4,7 @@ from graphene_django.types import DjangoObjectType
 from .models import Event, Review, Comment, EventFeature, UserEventRole
 from userapp.models import User
 import random
+from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 
 
@@ -63,11 +64,13 @@ class Query(graphene.ObjectType):
     comments_by_review = graphene.List(CommentType, review_id=graphene.ID(required=True))
     event_details = graphene.Field(EventDetailResponseType, event_id=graphene.ID(required=True))
     related_events = graphene.List(EventType, event_id=graphene.ID(required=True))
-    events_by_city_and_category = graphene.List(EventType, city=graphene.String(required=True),
-                                                category=graphene.String(required=True))
-    events_by_city_and_neighborhood = graphene.List(EventType, city=graphene.String(required=True),
-                                                    neighborhood=graphene.String(required=True))
-    events_with_images_by_city = graphene.List(EventType, city=graphene.String(required=True))
+    filtered_events = graphene.List(
+        EventType,
+        city=graphene.String(required=True),
+        event_category=graphene.String(),
+        neighborhood=graphene.String(),
+        has_image=graphene.Boolean()
+    )
 
     def resolve_search_events_by_city(self, info, city):
         return Event.objects.filter(city=city).order_by('-start_date')
@@ -105,14 +108,22 @@ class Query(graphene.ObjectType):
         except Event.DoesNotExist:
             return []
 
-    def resolve_events_by_city_and_category(self, info, city, category):
-        return Event.objects.filter(city=city, event_category=category).order_by('-start_date')
+    def resolve_filtered_events(self, info, city, event_category=None, neighborhood=None, has_image=None):
+        # فیلتر اولیه بر اساس شهر
+        filters = Q(city=city)
 
-    def resolve_events_by_city_and_neighborhood(self, info, city, neighborhood):
-        return Event.objects.filter(city=city, neighborhood=neighborhood).order_by('-start_date')
+        # افزودن فیلترهای اختیاری
+        if event_category:
+            filters &= Q(event_category=event_category)
+        if neighborhood:
+            filters &= Q(neighborhood=neighborhood)
+        if has_image is not None:
+            if has_image:
+                filters &= ~Q(image__isnull=True) & ~Q(image="")
+            else:
+                filters &= Q(image__isnull=True) | Q(image="")
 
-    def resolve_events_with_images_by_city(self, info, city):
-        return Event.objects.filter(city=city).exclude(image__isnull=True).exclude(image="").order_by('-start_date')
+        return Event.objects.filter(filters).order_by('-start_date')
 
 
 class CreateEvent(graphene.Mutation):
