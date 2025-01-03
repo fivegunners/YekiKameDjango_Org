@@ -314,3 +314,82 @@ class TestCreateTicketMessage(TestCase):
         # بررسی وجود خطا
         self.assertTrue(errors, "There should be an error for non-existent user.")
         self.assertIn("User not found.", errors[0]["message"], "Error message should indicate user not found.")
+
+
+class TestUserTicketsQuery(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="userpassword"
+        )
+
+        # ساخت تیکت‌های تستی با تاریخ‌های دستی
+        Ticket.objects.create(
+            title="Ticket 1",
+            department="technical",
+            status="waiting",
+            priority="high",
+            created_by=cls.user,
+            created_at="2024-01-01 10:00:00"
+        )
+        Ticket.objects.create(
+            title="Ticket 2",
+            department="financial",
+            status="answered",
+            priority="medium",
+            created_by=cls.user,
+            created_at="2024-01-02 10:00:00"
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_user_tickets_query(self):
+        query = '''
+        query {
+            userTickets(phone: "09123456789") {
+                title
+                department
+                status
+                priority
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        tickets = response.get("data", {}).get("userTickets", [])
+
+        # بررسی تعداد تیکت‌ها
+        self.assertEqual(len(tickets), 2, "There should be 2 tickets for the user.")
+
+        # بررسی اطلاعات تیکت‌ها
+        self.assertEqual(tickets[0]["title"], "Ticket 2", "The first ticket title should match.")
+        self.assertEqual(tickets[0]["department"], "FINANCIAL", "The first ticket department should match.")
+        self.assertEqual(tickets[0]["status"], "ANSWERED", "The first ticket status should match.")
+        self.assertEqual(tickets[0]["priority"], "MEDIUM", "The first ticket priority should match.")
+
+        self.assertEqual(tickets[1]["title"], "Ticket 1", "The second ticket title should match.")
+        self.assertEqual(tickets[1]["department"], "TECHNICAL", "The second ticket department should match.")
+        self.assertEqual(tickets[1]["status"], "WAITING", "The second ticket status should match.")
+        self.assertEqual(tickets[1]["priority"], "HIGH", "The second ticket priority should match.")
+
+    def test_user_tickets_no_user_found(self):
+        query = '''
+        query {
+            userTickets(phone: "09111234567") {
+                title
+                department
+                status
+                priority
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        tickets = response.get("data", {}).get("userTickets", [])
+
+        # بررسی اینکه هیچ تیکتی یافت نشده است
+        self.assertEqual(len(tickets), 0, "There should be no tickets for a non-existent user.")

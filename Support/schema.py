@@ -18,15 +18,29 @@ class NoticeType(DjangoObjectType):
         fields = ('title', 'content')
 
 
+class TicketType(DjangoObjectType):
+    class Meta:
+        model = Ticket
+        fields = "__all__"
+
+
 class Query(graphene.ObjectType):
     all_faqs = graphene.List(FAQType)
     active_notices = graphene.List(NoticeType)
+    user_tickets = graphene.List(TicketType, phone=graphene.String(required=True))
 
     def resolve_active_notices(self, info):
         return Notice.objects.filter(expiration_date__gt=now())
 
     def resolve_all_faqs(root, info):
         return FAQ.objects.all().order_by('created_at')
+
+    def resolve_user_tickets(self, info, phone):
+        try:
+            user = User.objects.get(phone=phone)
+            return Ticket.objects.filter(created_by=user).order_by('-created_at')
+        except User.DoesNotExist:
+            return []
 
 
 class ContactUsType(DjangoObjectType):
@@ -63,12 +77,6 @@ class CreateContactUs(graphene.Mutation):
         )
 
         return CreateContactUs(contact=contact)
-
-
-class TicketType(DjangoObjectType):
-    class Meta:
-        model = Ticket
-        fields = "__all__"
 
 
 # تعریف Mutation برای ایجاد تیکت
