@@ -427,6 +427,34 @@ class ReviewJoinRequest(graphene.Mutation):
             return ReviewJoinRequest(success=False, message="User join request not found.")
 
 
+class DeleteEvent(graphene.Mutation):
+    class Arguments:
+        event_id = graphene.ID(required=True)
+        owner_phone = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, event_id, owner_phone):
+        try:
+            # بررسی وجود رویداد
+            event = Event.objects.get(id=event_id)
+
+            # بررسی اینکه کاربر بررسی‌کننده مالک رویداد باشد
+            owner = User.objects.get(phone=owner_phone)
+            if event.event_owner != owner:
+                raise PermissionDenied("You are not authorized to delete this event.")
+
+            # حذف رویداد
+            event.delete()
+            return DeleteEvent(success=True, message="Event deleted successfully.")
+
+        except Event.DoesNotExist:
+            return DeleteEvent(success=False, message="Event not found.")
+        except User.DoesNotExist:
+            return DeleteEvent(success=False, message="Owner not found.")
+
+
 class Mutation(graphene.ObjectType):
     create_event = CreateEvent.Field()
     create_review = CreateReview.Field()
@@ -434,6 +462,7 @@ class Mutation(graphene.ObjectType):
     update_event_detail = UpdateEventDetail.Field()
     request_join_event = RequestJoinEvent.Field()
     review_join_request = ReviewJoinRequest.Field()
+    delete_event = DeleteEvent.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

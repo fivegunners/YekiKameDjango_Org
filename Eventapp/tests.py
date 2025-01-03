@@ -1188,3 +1188,96 @@ class TestCheckJoinRequestStatus(TestCase):
         message = response.get("data", {}).get("checkJoinRequestStatus", {}).get("message", "")
 
         self.assertEqual(message, "No join request found for this event.")
+
+
+class TestDeleteEvent(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.owner = User.objects.create_user(
+            phone="09123456789",
+            password="ownerpassword"
+        )
+
+        cls.other_user = User.objects.create_user(
+            phone="09123456788",
+            password="otherpassword"
+        )
+
+        # ساخت ایونت تستی
+        cls.event = Event.objects.create(
+            title="Test Event",
+            event_category="education",
+            about_event="This is a test event.",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            registration_start_date="2023-12-20 10:00:00",
+            registration_end_date="2023-12-30 18:00:00",
+            full_description="This is the full description of the test event.",
+            max_subscribers=100,
+            event_owner=cls.owner
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_delete_event_by_owner(self):
+        query = '''
+        mutation {
+            deleteEvent(eventId: "%s", ownerPhone: "%s") {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.owner.phone)
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("deleteEvent", {})
+
+        self.assertTrue(data["success"], "Owner should be able to delete the event.")
+        self.assertEqual(data["message"], "Event deleted successfully.")
+
+        # بررسی اینکه رویداد حذف شده است
+        with self.assertRaises(Event.DoesNotExist):
+            Event.objects.get(id=self.event.id)
+
+    def test_delete_event_by_other_user(self):
+        query = '''
+        mutation {
+            deleteEvent(eventId: "%s", ownerPhone: "%s") {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.other_user.phone)
+
+        response = self.client.execute(query)
+        errors = response.get("errors", [])
+        data = response.get("data", {}).get("deleteEvent", {})
+
+        # بررسی وجود خطا در پاسخ
+        if errors:
+            self.assertIn("You are not authorized to delete this event.", errors[0]["message"])
+        else:
+            self.assertFalse(data["success"], "Other users should not be able to delete the event.")
+            self.assertEqual(data["message"], "You are not authorized to delete this event.")
+
+        # بررسی اینکه رویداد همچنان وجود دارد
+        self.assertTrue(Event.objects.filter(id=self.event.id).exists(), "Event should not be deleted by other users.")
+
+    def test_delete_non_existent_event(self):
+        query = '''
+        mutation {
+            deleteEvent(eventId: "9999", ownerPhone: "%s") {
+                success
+                message
+            }
+        }
+        ''' % self.owner.phone
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("deleteEvent", {})
+
+        self.assertFalse(data["success"], "Deleting a non-existent event should fail.")
+        self.assertEqual(data["message"], "Event not found.")
