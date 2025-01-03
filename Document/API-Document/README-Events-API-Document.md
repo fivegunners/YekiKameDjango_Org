@@ -469,140 +469,6 @@ query {
   - `eventCategory`: The category of the related event.
 
 
-### Fetch Events by City and Category
-
-The `eventsByCityAndCategory` query allows you to fetch events in a specific city and category, sorted by their start date in descending order.
-
-#### Request:
-```graphql
-query {
-    eventsByCityAndCategory(city: "Tehran", category: "education") {
-        title
-        city
-        eventCategory
-        startDate
-    }
-}
-```
-
-#### Response:
-```json
-{
-    "data": {
-        "eventsByCityAndCategory": [
-            {
-                "title": "Event 1",
-                "city": "Tehran",
-                "eventCategory": "education",
-                "startDate": "2024-01-03T10:00:00+00:00"
-            },
-            {
-                "title": "Event 2",
-                "city": "Tehran",
-                "eventCategory": "education",
-                "startDate": "2024-01-01T10:00:00+00:00"
-            }
-        ]
-    }
-}
-```
-
-#### Description:
-- `city`: The city where the events are located.
-- `category`: The category of the events to filter.
-- The response includes the `title`, `city`, `eventCategory`, and `startDate` of the events.
-
----
-
-### Fetch Events by City and Neighborhood
-
-The `eventsByCityAndNeighborhood` query allows you to fetch events in a specific city and neighborhood, sorted by their start date in descending order.
-
-#### Request:
-```graphql
-query {
-    eventsByCityAndNeighborhood(city: "Tehran", neighborhood: "Neighborhood 1") {
-        title
-        city
-        neighborhood
-        startDate
-    }
-}
-```
-
-#### Response:
-```json
-{
-    "data": {
-        "eventsByCityAndNeighborhood": [
-            {
-                "title": "Event 3",
-                "city": "Tehran",
-                "neighborhood": "Neighborhood 1",
-                "startDate": "2024-01-03T10:00:00+00:00"
-            },
-            {
-                "title": "Event 1",
-                "city": "Tehran",
-                "neighborhood": "Neighborhood 1",
-                "startDate": "2024-01-01T10:00:00+00:00"
-            }
-        ]
-    }
-}
-```
-
-#### Description:
-- `city`: The city where the events are located.
-- `neighborhood`: The neighborhood of the events to filter.
-- The response includes the `title`, `city`, `neighborhood`, and `startDate` of the events.
-
----
-
-### Fetch Events with Images by City
-
-The `eventsWithImagesByCity` query allows you to fetch events in a specific city that have an image, sorted by their start date in descending order.
-
-#### Request:
-```graphql
-query {
-    eventsWithImagesByCity(city: "Tehran") {
-        title
-        city
-        image
-        startDate
-    }
-}
-```
-
-#### Response:
-```json
-{
-    "data": {
-        "eventsWithImagesByCity": [
-            {
-                "title": "Event 3",
-                "city": "Tehran",
-                "image": "event3.jpg",
-                "startDate": "2024-01-03T10:00:00+00:00"
-            },
-            {
-                "title": "Event 1",
-                "city": "Tehran",
-                "image": "event1.jpg",
-                "startDate": "2024-01-01T10:00:00+00:00"
-            }
-        ]
-    }
-}
-```
-
-#### Description:
-- `city`: The city where the events are located.
-- Only events with a non-null and non-empty `image` field are returned.
-- The response includes the `title`, `city`, `image`, and `startDate` of the events.
-
-
 ## Mutation: Update Event Detail
 
 The `updateEventDetail` mutation allows the owner or an admin of an event to update its details.
@@ -714,6 +580,425 @@ mutation {
 - Additional fields depend on the user's role:
   - **Owner** can update all fields.
   - **Admin** can update only the allowed fields.
+
+---
+
+## Query: Filtered Events
+
+The `filteredEvents` query allows you to dynamically filter events using the following criteria:
+- `city` (required): The city where the events are located.
+- `event_category` (optional): The category of the events.
+- `neighborhood` (optional): The neighborhood of the events.
+- `has_image` (optional): Whether the events have an associated image.
+
+### Request (By City Only):
+```graphql
+query {
+    filteredEvents(city: "Tehran") {
+        title
+        city
+        startDate
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "filteredEvents": [
+            {
+                "title": "Event 3",
+                "city": "Tehran",
+                "startDate": "2024-01-03T10:00:00+00:00"
+            },
+            {
+                "title": "Event 2",
+                "city": "Tehran",
+                "startDate": "2024-01-02T10:00:00+00:00"
+            },
+            {
+                "title": "Event 1",
+                "city": "Tehran",
+                "startDate": "2024-01-01T10:00:00+00:00"
+            }
+        ]
+    }
+}
+```
+
+---
+
+### Request (By City and Category):
+```graphql
+query {
+    filteredEvents(city: "Tehran", eventCategory: "education") {
+        title
+        eventCategory
+        startDate
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "filteredEvents": [
+            {
+                "title": "Event 2",
+                "eventCategory": "education",
+                "startDate": "2024-01-02T10:00:00+00:00"
+            },
+            {
+                "title": "Event 1",
+                "eventCategory": "education",
+                "startDate": "2024-01-01T10:00:00+00:00"
+            }
+        ]
+    }
+}
+```
+
+---
+
+### Request (By City and Neighborhood):
+```graphql
+query {
+    filteredEvents(city: "Tehran", neighborhood: "Neighborhood 1") {
+        title
+        neighborhood
+        startDate
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "filteredEvents": [
+            {
+                "title": "Event 3",
+                "neighborhood": "Neighborhood 1",
+                "startDate": "2024-01-03T10:00:00+00:00"
+            },
+            {
+                "title": "Event 1",
+                "neighborhood": "Neighborhood 1",
+                "startDate": "2024-01-01T10:00:00+00:00"
+            }
+        ]
+    }
+}
+```
+
+---
+
+### Request (By City and Has Image):
+```graphql
+query {
+    filteredEvents(city: "Tehran", hasImage: true) {
+        title
+        image
+        startDate
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "filteredEvents": [
+            {
+                "title": "Event 3",
+                "image": "event3.jpg",
+                "startDate": "2024-01-03T10:00:00+00:00"
+            },
+            {
+                "title": "Event 1",
+                "image": "event1.jpg",
+                "startDate": "2024-01-01T10:00:00+00:00"
+            }
+        ]
+    }
+}
+```
+
+---
+
+### Request (By All Filters):
+```graphql
+query {
+    filteredEvents(
+        city: "Tehran",
+        eventCategory: "education",
+        neighborhood: "Neighborhood 1",
+        hasImage: true
+    ) {
+        title
+        city
+        eventCategory
+        neighborhood
+        image
+        startDate
+    }
+}
+```
+
+#### Response:
+```json
+{
+    "data": {
+        "filteredEvents": [
+            {
+                "title": "Event 1",
+                "city": "Tehran",
+                "eventCategory": "education",
+                "neighborhood": "Neighborhood 1",
+                "image": "event1.jpg",
+                "startDate": "2024-01-01T10:00:00+00:00"
+            }
+        ]
+    }
+}
+```
+
+### Description:
+- `city`: The city where the events are located (required).
+- `eventCategory`: The category of the events (optional).
+- `neighborhood`: The neighborhood of the events (optional).
+- `hasImage`: Whether the events have an associated image (optional).
+
+
+## Mutation: Request Join Event
+
+The `requestJoinEvent` mutation allows a user to request to join an event.
+
+### Request:
+```graphql
+mutation {
+    requestJoinEvent(eventId: "1", phone: "09123456789") {
+        success
+        message
+    }
+}
+```
+
+### Response:
+#### Successful Request:
+```json
+{
+    "data": {
+        "requestJoinEvent": {
+            "success": true,
+            "message": "Request to join the event has been sent successfully."
+        }
+    }
+}
+```
+
+#### Duplicate Request:
+If the user has already requested to join the event:
+```json
+{
+    "data": {
+        "requestJoinEvent": {
+            "success": false,
+            "message": "You have already requested to join this event."
+        }
+    }
+}
+```
+
+---
+
+## Mutation: Review Join Request
+
+The `reviewJoinRequest` mutation allows the owner of an event to approve or reject a user's join request and optionally assign a role.
+
+### Request:
+#### Approve Request:
+```graphql
+mutation {
+    reviewJoinRequest(
+        eventId: "1",
+        userId: "2",
+        action: "approve",
+        role: "admin",
+        ownerPhone: "09123456788"
+    ) {
+        success
+        message
+    }
+}
+```
+
+#### Reject Request:
+```graphql
+mutation {
+    reviewJoinRequest(
+        eventId: "1",
+        userId: "2",
+        action: "reject",
+        ownerPhone: "09123456788"
+    ) {
+        success
+        message
+    }
+}
+```
+
+### Responses:
+#### Approve Request:
+```json
+{
+    "data": {
+        "reviewJoinRequest": {
+            "success": true,
+            "message": "User request approved successfully with role 'admin'."
+        }
+    }
+}
+```
+
+#### Reject Request:
+```json
+{
+    "data": {
+        "reviewJoinRequest": {
+            "success": true,
+            "message": "User request rejected successfully."
+        }
+    }
+}
+```
+
+#### Invalid Action:
+If an invalid action is provided:
+```json
+{
+    "data": {
+        "reviewJoinRequest": {
+            "success": false,
+            "message": "Invalid action provided."
+        }
+    }
+}
+```
+
+---
+
+### Description:
+#### Request Join Event:
+- `eventId`: The ID of the event the user wants to join.
+- `phone`: The phone number of the user.
+- **Behavior:**
+  - Creates a join request with `is_approved=None` (pending status).
+  - Returns a message indicating success or failure (e.g., duplicate request).
+
+#### Review Join Request:
+- `eventId`: The ID of the event the request is related to.
+- `userId`: The ID of the user whose request is being reviewed.
+- `action`: The action to take on the request (`approve` or `reject`).
+- `role` (optional): The role to assign to the user if the request is approved (`regular` or `admin`).
+- `ownerPhone`: The phone number of the event owner.
+- **Behavior:**
+  - Allows the owner to approve or reject requests.
+  - Sets the `role` if the request is approved.
+
+---
+
+
+## Query: Check Join Request Status
+
+The `checkJoinRequestStatus` query allows you to check the status of a user's join request for a specific event.
+
+### Request:
+```graphql
+query {
+    checkJoinRequestStatus(phone: "09123456789", eventId: "1") {
+        message
+    }
+}
+```
+
+### Responses:
+
+#### Pending Request:
+If the request is still pending review:
+```json
+{
+    "data": {
+        "checkJoinRequestStatus": {
+            "message": "Your request is pending review."
+        }
+    }
+}
+```
+
+#### Rejected Request:
+If the request has been rejected:
+```json
+{
+    "data": {
+        "checkJoinRequestStatus": {
+            "message": "Your request has been rejected."
+        }
+    }
+}
+```
+
+#### Approved Request as Regular User:
+If the request has been approved and the user is assigned the `regular` role:
+```json
+{
+    "data": {
+        "checkJoinRequestStatus": {
+            "message": "Your request has been approved as a regular user."
+        }
+    }
+}
+```
+
+#### Approved Request as Admin:
+If the request has been approved and the user is assigned the `admin` role:
+```json
+{
+    "data": {
+        "checkJoinRequestStatus": {
+            "message": "Your request has been approved as an admin user."
+        }
+    }
+}
+```
+
+#### No Request Found:
+If no join request exists for the user and event:
+```json
+{
+    "data": {
+        "checkJoinRequestStatus": {
+            "message": "No join request found for this event."
+        }
+    }
+}
+```
+
+---
+
+### Description:
+- `phone`: The phone number of the user whose join request status you want to check.
+- `eventId`: The ID of the event for which the join request status is being checked.
+
+### Behavior:
+- Returns a message indicating the current status of the join request:
+  - Pending (`is_approved=None`): "Your request is pending review."
+  - Rejected (`is_approved=False`): "Your request has been rejected."
+  - Approved as Regular User (`is_approved=True` and `role=regular`): "Your request has been approved as a regular user."
+  - Approved as Admin (`is_approved=True` and `role=admin`): "Your request has been approved as an admin user."
+  - No Request Found: "No join request found for this event."
 
 ---
 

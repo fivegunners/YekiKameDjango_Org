@@ -4,6 +4,7 @@ from graphene_django.types import DjangoObjectType
 from .models import Event, Review, Comment, EventFeature, UserEventRole
 from userapp.models import User
 import random
+from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 
 
@@ -56,6 +57,35 @@ class EventDetailResponseType(graphene.ObjectType):
     error = graphene.String()
 
 
+class CheckJoinRequestStatus(graphene.ObjectType):
+    message = graphene.String()
+
+    class Arguments:
+        phone = graphene.String(required=True)
+        event_id = graphene.ID(required=True)
+
+    def resolve(self, info, phone, event_id):
+        try:
+            # بررسی وجود رابطه کاربر و رویداد
+            user_event_role = UserEventRole.objects.get(
+                user__phone=phone,
+                event__id=event_id
+            )
+
+            if user_event_role.is_approved is None:
+                return CheckJoinRequestStatus(message="Your request is pending review.")
+            elif user_event_role.is_approved is False:
+                return CheckJoinRequestStatus(message="Your request has been rejected.")
+            elif user_event_role.is_approved is True:
+                if user_event_role.role == "regular":
+                    return CheckJoinRequestStatus(message="Your request has been approved as a regular user.")
+                elif user_event_role.role == "admin":
+                    return CheckJoinRequestStatus(message="Your request has been approved as an admin user.")
+
+        except UserEventRole.DoesNotExist:
+            return CheckJoinRequestStatus(message="No join request found for this event.")
+
+
 class Query(graphene.ObjectType):
     search_events_by_city = graphene.List(EventType, city=graphene.String(required=True))
     recent_events = graphene.List(EventType)
@@ -63,11 +93,18 @@ class Query(graphene.ObjectType):
     comments_by_review = graphene.List(CommentType, review_id=graphene.ID(required=True))
     event_details = graphene.Field(EventDetailResponseType, event_id=graphene.ID(required=True))
     related_events = graphene.List(EventType, event_id=graphene.ID(required=True))
-    events_by_city_and_category = graphene.List(EventType, city=graphene.String(required=True),
-                                                category=graphene.String(required=True))
-    events_by_city_and_neighborhood = graphene.List(EventType, city=graphene.String(required=True),
-                                                    neighborhood=graphene.String(required=True))
-    events_with_images_by_city = graphene.List(EventType, city=graphene.String(required=True))
+    filtered_events = graphene.List(
+        EventType,
+        city=graphene.String(required=True),
+        event_category=graphene.String(),
+        neighborhood=graphene.String(),
+        has_image=graphene.Boolean()
+    )
+    check_join_request_status = graphene.Field(CheckJoinRequestStatus, phone=graphene.String(required=True),
+                                               event_id=graphene.ID(required=True))
+
+    def resolve_check_join_request_status(self, info, phone, event_id):
+        return CheckJoinRequestStatus().resolve(info, phone, event_id)
 
     def resolve_search_events_by_city(self, info, city):
         return Event.objects.filter(city=city).order_by('-start_date')
@@ -105,14 +142,22 @@ class Query(graphene.ObjectType):
         except Event.DoesNotExist:
             return []
 
-    def resolve_events_by_city_and_category(self, info, city, category):
-        return Event.objects.filter(city=city, event_category=category).order_by('-start_date')
+    def resolve_filtered_events(self, info, city, event_category=None, neighborhood=None, has_image=None):
+        # فیلتر اولیه بر اساس شهر
+        filters = Q(city=city)
 
-    def resolve_events_by_city_and_neighborhood(self, info, city, neighborhood):
-        return Event.objects.filter(city=city, neighborhood=neighborhood).order_by('-start_date')
+        # افزودن فیلترهای اختیاری
+        if event_category:
+            filters &= Q(event_category=event_category)
+        if neighborhood:
+            filters &= Q(neighborhood=neighborhood)
+        if has_image is not None:
+            if has_image:
+                filters &= ~Q(image__isnull=True) & ~Q(image="")
+            else:
+                filters &= Q(image__isnull=True) | Q(image="")
 
-    def resolve_events_with_images_by_city(self, info, city):
-        return Event.objects.filter(city=city).exclude(image__isnull=True).exclude(image="").order_by('-start_date')
+        return Event.objects.filter(filters).order_by('-start_date')
 
 
 class CreateEvent(graphene.Mutation):
@@ -306,11 +351,89 @@ class UpdateEventDetail(graphene.Mutation):
             return UpdateEventDetail(success=False, message="User not found.")
 
 
+class RequestJoinEvent(graphene.Mutation):
+    class Arguments:
+        event_id = graphene.ID(required=True)
+        phone = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, event_id, phone):
+        try:
+            # بررسی وجود رویداد
+            event = Event.objects.get(id=event_id)
+            # بررسی وجود کاربر
+            user = User.objects.get(phone=phone)
+
+            # ایجاد درخواست پیوستن
+            user_event_role, created = UserEventRole.objects.get_or_create(
+                user=user,
+                event=event,
+                defaults={"role": "regular", "is_approved": None}
+            )
+
+            if not created:
+                return RequestJoinEvent(success=False, message="You have already requested to join this event.")
+
+            return RequestJoinEvent(success=True, message="Request to join the event has been sent successfully.")
+
+        except Event.DoesNotExist:
+            return RequestJoinEvent(success=False, message="Event not found.")
+        except User.DoesNotExist:
+            return RequestJoinEvent(success=False, message="User not found.")
+
+
+class ReviewJoinRequest(graphene.Mutation):
+    class Arguments:
+        event_id = graphene.ID(required=True)
+        user_id = graphene.ID(required=True)
+        action = graphene.String(required=True)  # "approve" یا "reject"
+        role = graphene.String()  # "regular" یا "admin" در صورت تایید
+        owner_phone = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, event_id, user_id, action, owner_phone, role=None):
+        try:
+            # بررسی وجود رویداد
+            event = Event.objects.get(id=event_id)
+            # بررسی اینکه کاربر بررسی‌کننده مالک رویداد باشد
+            owner = User.objects.get(phone=owner_phone)
+            if event.event_owner != owner:
+                raise PermissionDenied("You are not authorized to review join requests for this event.")
+
+            # بررسی وجود رابطه کاربر-رویداد
+            user_event_role = UserEventRole.objects.get(event=event, user_id=user_id)
+
+            if action == "approve":
+                user_event_role.is_approved = True
+                user_event_role.role = role if role in ["regular", "admin"] else "regular"
+                user_event_role.save()
+                return ReviewJoinRequest(success=True, message=f"User request approved successfully with role '{user_event_role.role}'.")
+            elif action == "reject":
+                user_event_role.is_approved = False
+                user_event_role.save()
+                return ReviewJoinRequest(success=True, message="User request rejected successfully.")
+            else:
+                return ReviewJoinRequest(success=False, message="Invalid action provided.")
+
+        except Event.DoesNotExist:
+            return ReviewJoinRequest(success=False, message="Event not found.")
+        except User.DoesNotExist:
+            return ReviewJoinRequest(success=False, message="Owner not found.")
+        except UserEventRole.DoesNotExist:
+            return ReviewJoinRequest(success=False, message="User join request not found.")
+
+
 class Mutation(graphene.ObjectType):
     create_event = CreateEvent.Field()
     create_review = CreateReview.Field()
     create_comment = CreateComment.Field()
     update_event_detail = UpdateEventDetail.Field()
+    request_join_event = RequestJoinEvent.Field()
+    review_join_request = ReviewJoinRequest.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

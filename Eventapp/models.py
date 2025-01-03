@@ -46,7 +46,7 @@ class UserEventRole(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='regular')
-    is_approved = models.BooleanField(default=False)  # برای تائید یا رد کاربران
+    is_approved = models.BooleanField(null=True, blank=True, default=None)  # برای تائید یا رد کاربران
 
     class Meta:
         unique_together = ('user', 'event')
