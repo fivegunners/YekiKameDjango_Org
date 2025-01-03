@@ -245,6 +245,70 @@ mutation {
 - The response includes details about the message, the ticket it belongs to, and the user who added the message.
 
 
+## Query: User Tickets
+
+The `userTickets` query allows you to retrieve all tickets created by a user, filtered by their phone number.
+
+### Request:
+```graphql
+query {
+    userTickets(phone: "09123456789") {
+        title
+        department
+        status
+        priority
+    }
+}
+```
+
+### Responses:
+
+#### Successful Request:
+If tickets exist for the user:
+```json
+{
+    "data": {
+        "userTickets": [
+            {
+                "title": "Ticket 2",
+                "department": "financial",
+                "status": "answered",
+                "priority": "medium"
+            },
+            {
+                "title": "Ticket 1",
+                "department": "technical",
+                "status": "waiting",
+                "priority": "high"
+            }
+        ]
+    }
+}
+```
+
+#### No Tickets Found:
+If the user has not created any tickets:
+```json
+{
+    "data": {
+        "userTickets": []
+    }
+}
+```
+
+---
+
+### Description:
+- `phone`: The phone number of the user whose tickets are being fetched.
+
+### Behavior:
+- Returns all tickets created by the user.
+- Each ticket includes the following fields:
+  - `title`: The title of the ticket.
+  - `department`: The department associated with the ticket.
+  - `status`: The current status of the ticket (`waiting`, `answered`, etc.).
+  - `priority`: The priority level of the ticket (`low`, `medium`, `high`).
+
 ---
 
 This document provides all necessary information to test and implement the GraphQL API interactions for FAQ management and contact form submissions in your project.
