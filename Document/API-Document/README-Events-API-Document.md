@@ -765,12 +765,241 @@ query {
 }
 ```
 
----
-
 ### Description:
 - `city`: The city where the events are located (required).
 - `eventCategory`: The category of the events (optional).
 - `neighborhood`: The neighborhood of the events (optional).
 - `hasImage`: Whether the events have an associated image (optional).
+
+
+## Mutation: Request Join Event
+
+The `requestJoinEvent` mutation allows a user to request to join an event.
+
+### Request:
+```graphql
+mutation {
+    requestJoinEvent(eventId: "1", phone: "09123456789") {
+        success
+        message
+    }
+}
+```
+
+### Response:
+#### Successful Request:
+```json
+{
+    "data": {
+        "requestJoinEvent": {
+            "success": true,
+            "message": "Request to join the event has been sent successfully."
+        }
+    }
+}
+```
+
+#### Duplicate Request:
+If the user has already requested to join the event:
+```json
+{
+    "data": {
+        "requestJoinEvent": {
+            "success": false,
+            "message": "You have already requested to join this event."
+        }
+    }
+}
+```
+
+---
+
+## Mutation: Review Join Request
+
+The `reviewJoinRequest` mutation allows the owner of an event to approve or reject a user's join request and optionally assign a role.
+
+### Request:
+#### Approve Request:
+```graphql
+mutation {
+    reviewJoinRequest(
+        eventId: "1",
+        userId: "2",
+        action: "approve",
+        role: "admin",
+        ownerPhone: "09123456788"
+    ) {
+        success
+        message
+    }
+}
+```
+
+#### Reject Request:
+```graphql
+mutation {
+    reviewJoinRequest(
+        eventId: "1",
+        userId: "2",
+        action: "reject",
+        ownerPhone: "09123456788"
+    ) {
+        success
+        message
+    }
+}
+```
+
+### Responses:
+#### Approve Request:
+```json
+{
+    "data": {
+        "reviewJoinRequest": {
+            "success": true,
+            "message": "User request approved successfully with role 'admin'."
+        }
+    }
+}
+```
+
+#### Reject Request:
+```json
+{
+    "data": {
+        "reviewJoinRequest": {
+            "success": true,
+            "message": "User request rejected successfully."
+        }
+    }
+}
+```
+
+#### Invalid Action:
+If an invalid action is provided:
+```json
+{
+    "data": {
+        "reviewJoinRequest": {
+            "success": false,
+            "message": "Invalid action provided."
+        }
+    }
+}
+```
+
+---
+
+### Description:
+#### Request Join Event:
+- `eventId`: The ID of the event the user wants to join.
+- `phone`: The phone number of the user.
+- **Behavior:**
+  - Creates a join request with `is_approved=None` (pending status).
+  - Returns a message indicating success or failure (e.g., duplicate request).
+
+#### Review Join Request:
+- `eventId`: The ID of the event the request is related to.
+- `userId`: The ID of the user whose request is being reviewed.
+- `action`: The action to take on the request (`approve` or `reject`).
+- `role` (optional): The role to assign to the user if the request is approved (`regular` or `admin`).
+- `ownerPhone`: The phone number of the event owner.
+- **Behavior:**
+  - Allows the owner to approve or reject requests.
+  - Sets the `role` if the request is approved.
+
+---
+
+
+## Query: Check Join Request Status
+
+The `checkJoinRequestStatus` query allows you to check the status of a user's join request for a specific event.
+
+### Request:
+```graphql
+query {
+    checkJoinRequestStatus(phone: "09123456789", eventId: "1") {
+        message
+    }
+}
+```
+
+### Responses:
+
+#### Pending Request:
+If the request is still pending review:
+```json
+{
+    "data": {
+        "checkJoinRequestStatus": {
+            "message": "Your request is pending review."
+        }
+    }
+}
+```
+
+#### Rejected Request:
+If the request has been rejected:
+```json
+{
+    "data": {
+        "checkJoinRequestStatus": {
+            "message": "Your request has been rejected."
+        }
+    }
+}
+```
+
+#### Approved Request as Regular User:
+If the request has been approved and the user is assigned the `regular` role:
+```json
+{
+    "data": {
+        "checkJoinRequestStatus": {
+            "message": "Your request has been approved as a regular user."
+        }
+    }
+}
+```
+
+#### Approved Request as Admin:
+If the request has been approved and the user is assigned the `admin` role:
+```json
+{
+    "data": {
+        "checkJoinRequestStatus": {
+            "message": "Your request has been approved as an admin user."
+        }
+    }
+}
+```
+
+#### No Request Found:
+If no join request exists for the user and event:
+```json
+{
+    "data": {
+        "checkJoinRequestStatus": {
+            "message": "No join request found for this event."
+        }
+    }
+}
+```
+
+---
+
+### Description:
+- `phone`: The phone number of the user whose join request status you want to check.
+- `eventId`: The ID of the event for which the join request status is being checked.
+
+### Behavior:
+- Returns a message indicating the current status of the join request:
+  - Pending (`is_approved=None`): "Your request is pending review."
+  - Rejected (`is_approved=False`): "Your request has been rejected."
+  - Approved as Regular User (`is_approved=True` and `role=regular`): "Your request has been approved as a regular user."
+  - Approved as Admin (`is_approved=True` and `role=admin`): "Your request has been approved as an admin user."
+  - No Request Found: "No join request found for this event."
+
+---
 
 This document provides the necessary information to test and implement the GraphQL API interactions for event management in your project.
