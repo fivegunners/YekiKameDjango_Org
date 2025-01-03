@@ -57,6 +57,35 @@ class EventDetailResponseType(graphene.ObjectType):
     error = graphene.String()
 
 
+class CheckJoinRequestStatus(graphene.ObjectType):
+    message = graphene.String()
+
+    class Arguments:
+        phone = graphene.String(required=True)
+        event_id = graphene.ID(required=True)
+
+    def resolve(self, info, phone, event_id):
+        try:
+            # بررسی وجود رابطه کاربر و رویداد
+            user_event_role = UserEventRole.objects.get(
+                user__phone=phone,
+                event__id=event_id
+            )
+
+            if user_event_role.is_approved is None:
+                return CheckJoinRequestStatus(message="Your request is pending review.")
+            elif user_event_role.is_approved is False:
+                return CheckJoinRequestStatus(message="Your request has been rejected.")
+            elif user_event_role.is_approved is True:
+                if user_event_role.role == "regular":
+                    return CheckJoinRequestStatus(message="Your request has been approved as a regular user.")
+                elif user_event_role.role == "admin":
+                    return CheckJoinRequestStatus(message="Your request has been approved as an admin user.")
+
+        except UserEventRole.DoesNotExist:
+            return CheckJoinRequestStatus(message="No join request found for this event.")
+
+
 class Query(graphene.ObjectType):
     search_events_by_city = graphene.List(EventType, city=graphene.String(required=True))
     recent_events = graphene.List(EventType)
@@ -71,6 +100,11 @@ class Query(graphene.ObjectType):
         neighborhood=graphene.String(),
         has_image=graphene.Boolean()
     )
+    check_join_request_status = graphene.Field(CheckJoinRequestStatus, phone=graphene.String(required=True),
+                                               event_id=graphene.ID(required=True))
+
+    def resolve_check_join_request_status(self, info, phone, event_id):
+        return CheckJoinRequestStatus().resolve(info, phone, event_id)
 
     def resolve_search_events_by_city(self, info, city):
         return Event.objects.filter(city=city).order_by('-start_date')

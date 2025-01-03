@@ -1082,3 +1082,109 @@ class TestReviewJoinRequest(TestCase):
 
         self.assertFalse(data["success"], "Invalid action should fail.")
         self.assertEqual(data["message"], "Invalid action provided.")
+
+
+class TestCheckJoinRequestStatus(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربران تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="userpassword"
+        )
+
+        # ساخت ایونت تستی
+        cls.event = Event.objects.create(
+            title="Test Event",
+            event_category="education",
+            about_event="This is a test event.",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            registration_start_date="2023-12-20 10:00:00",
+            registration_end_date="2023-12-30 18:00:00",
+            full_description="This is the full description of the test event.",
+            max_subscribers=100,
+            event_owner=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_pending_request(self):
+        UserEventRole.objects.create(user=self.user, event=self.event, is_approved=None, role="regular")
+
+        query = '''
+        query {
+            checkJoinRequestStatus(phone: "09123456789", eventId: "%s") {
+                message
+            }
+        }
+        ''' % self.event.id
+
+        response = self.client.execute(query)
+        message = response.get("data", {}).get("checkJoinRequestStatus", {}).get("message", "")
+
+        self.assertEqual(message, "Your request is pending review.")
+
+    def test_rejected_request(self):
+        UserEventRole.objects.create(user=self.user, event=self.event, is_approved=False, role="regular")
+
+        query = '''
+        query {
+            checkJoinRequestStatus(phone: "09123456789", eventId: "%s") {
+                message
+            }
+        }
+        ''' % self.event.id
+
+        response = self.client.execute(query)
+        message = response.get("data", {}).get("checkJoinRequestStatus", {}).get("message", "")
+
+        self.assertEqual(message, "Your request has been rejected.")
+
+    def test_approved_as_regular_user(self):
+        UserEventRole.objects.create(user=self.user, event=self.event, is_approved=True, role="regular")
+
+        query = '''
+        query {
+            checkJoinRequestStatus(phone: "09123456789", eventId: "%s") {
+                message
+            }
+        }
+        ''' % self.event.id
+
+        response = self.client.execute(query)
+        message = response.get("data", {}).get("checkJoinRequestStatus", {}).get("message", "")
+
+        self.assertEqual(message, "Your request has been approved as a regular user.")
+
+    def test_approved_as_admin_user(self):
+        UserEventRole.objects.create(user=self.user, event=self.event, is_approved=True, role="admin")
+
+        query = '''
+        query {
+            checkJoinRequestStatus(phone: "09123456789", eventId: "%s") {
+                message
+            }
+        }
+        ''' % self.event.id
+
+        response = self.client.execute(query)
+        message = response.get("data", {}).get("checkJoinRequestStatus", {}).get("message", "")
+
+        self.assertEqual(message, "Your request has been approved as an admin user.")
+
+    def test_no_request_found(self):
+        query = '''
+        query {
+            checkJoinRequestStatus(phone: "09123456789", eventId: "9999") {
+                message
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        message = response.get("data", {}).get("checkJoinRequestStatus", {}).get("message", "")
+
+        self.assertEqual(message, "No join request found for this event.")
