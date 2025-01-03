@@ -6,6 +6,12 @@ from userapp.models import User
 from django.utils.timezone import now
 
 
+class UserType(DjangoObjectType):
+    class Meta:
+        model = User
+        fields = ("id", "phone", "fullname", "email")
+
+
 class FAQType(DjangoObjectType):
     class Meta:
         model = FAQ
@@ -24,10 +30,22 @@ class TicketType(DjangoObjectType):
         fields = "__all__"
 
 
+class TicketMessageType(DjangoObjectType):
+    class Meta:
+        model = TicketMessage
+        fields = "__all__"
+
+    user = graphene.Field(UserType)
+
+    def resolve_user(self, info):
+        return self.user
+
+
 class Query(graphene.ObjectType):
     all_faqs = graphene.List(FAQType)
     active_notices = graphene.List(NoticeType)
     user_tickets = graphene.List(TicketType, phone=graphene.String(required=True))
+    ticket_messages = graphene.List(TicketMessageType, ticket_id=graphene.ID(required=True))
 
     def resolve_active_notices(self, info):
         return Notice.objects.filter(expiration_date__gt=now())
@@ -40,6 +58,13 @@ class Query(graphene.ObjectType):
             user = User.objects.get(phone=phone)
             return Ticket.objects.filter(created_by=user).order_by('-created_at')
         except User.DoesNotExist:
+            return []
+
+    def resolve_ticket_messages(self, info, ticket_id):
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+            return TicketMessage.objects.filter(ticket=ticket).order_by('created_at')
+        except Ticket.DoesNotExist:
             return []
 
 
@@ -106,23 +131,6 @@ class CreateTicket(graphene.Mutation):
         )
 
         return CreateTicket(ticket=ticket)
-
-
-class UserType(DjangoObjectType):
-    class Meta:
-        model = User
-        fields = ("id", "phone", "fullname", "email")
-
-
-class TicketMessageType(DjangoObjectType):
-    class Meta:
-        model = TicketMessage
-        fields = "__all__"
-
-    user = graphene.Field(UserType)
-
-    def resolve_user(self, info):
-        return self.user
 
 
 class CreateTicketMessage(graphene.Mutation):
