@@ -317,11 +317,89 @@ class UpdateEventDetail(graphene.Mutation):
             return UpdateEventDetail(success=False, message="User not found.")
 
 
+class RequestJoinEvent(graphene.Mutation):
+    class Arguments:
+        event_id = graphene.ID(required=True)
+        phone = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, event_id, phone):
+        try:
+            # بررسی وجود رویداد
+            event = Event.objects.get(id=event_id)
+            # بررسی وجود کاربر
+            user = User.objects.get(phone=phone)
+
+            # ایجاد درخواست پیوستن
+            user_event_role, created = UserEventRole.objects.get_or_create(
+                user=user,
+                event=event,
+                defaults={"role": "regular", "is_approved": None}
+            )
+
+            if not created:
+                return RequestJoinEvent(success=False, message="You have already requested to join this event.")
+
+            return RequestJoinEvent(success=True, message="Request to join the event has been sent successfully.")
+
+        except Event.DoesNotExist:
+            return RequestJoinEvent(success=False, message="Event not found.")
+        except User.DoesNotExist:
+            return RequestJoinEvent(success=False, message="User not found.")
+
+
+class ReviewJoinRequest(graphene.Mutation):
+    class Arguments:
+        event_id = graphene.ID(required=True)
+        user_id = graphene.ID(required=True)
+        action = graphene.String(required=True)  # "approve" یا "reject"
+        role = graphene.String()  # "regular" یا "admin" در صورت تایید
+        owner_phone = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, event_id, user_id, action, owner_phone, role=None):
+        try:
+            # بررسی وجود رویداد
+            event = Event.objects.get(id=event_id)
+            # بررسی اینکه کاربر بررسی‌کننده مالک رویداد باشد
+            owner = User.objects.get(phone=owner_phone)
+            if event.event_owner != owner:
+                raise PermissionDenied("You are not authorized to review join requests for this event.")
+
+            # بررسی وجود رابطه کاربر-رویداد
+            user_event_role = UserEventRole.objects.get(event=event, user_id=user_id)
+
+            if action == "approve":
+                user_event_role.is_approved = True
+                user_event_role.role = role if role in ["regular", "admin"] else "regular"
+                user_event_role.save()
+                return ReviewJoinRequest(success=True, message=f"User request approved successfully with role '{user_event_role.role}'.")
+            elif action == "reject":
+                user_event_role.is_approved = False
+                user_event_role.save()
+                return ReviewJoinRequest(success=True, message="User request rejected successfully.")
+            else:
+                return ReviewJoinRequest(success=False, message="Invalid action provided.")
+
+        except Event.DoesNotExist:
+            return ReviewJoinRequest(success=False, message="Event not found.")
+        except User.DoesNotExist:
+            return ReviewJoinRequest(success=False, message="Owner not found.")
+        except UserEventRole.DoesNotExist:
+            return ReviewJoinRequest(success=False, message="User join request not found.")
+
+
 class Mutation(graphene.ObjectType):
     create_event = CreateEvent.Field()
     create_review = CreateReview.Field()
     create_comment = CreateComment.Field()
     update_event_detail = UpdateEventDetail.Field()
+    request_join_event = RequestJoinEvent.Field()
+    review_join_request = ReviewJoinRequest.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

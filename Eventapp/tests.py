@@ -904,3 +904,181 @@ class TestFilteredEventsQuery(TestCase):
         self.assertEqual(events[0]["eventCategory"], "EDUCATION", "Category should match.")
         self.assertEqual(events[0]["neighborhood"], "Neighborhood 1", "Neighborhood should match.")
         self.assertIsNotNone(events[0]["image"], "Image should not be null or empty.")
+
+
+class TestRequestJoinEvent(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="password123"
+        )
+
+        # ساخت ایونت تستی
+        cls.event = Event.objects.create(
+            title="Test Event",
+            event_category="education",
+            about_event="This is a test event.",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            registration_start_date="2023-12-20 10:00:00",
+            registration_end_date="2023-12-30 18:00:00",
+            full_description="This is the full description of the test event.",
+            max_subscribers=100,
+            event_owner=cls.user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_request_join_event(self):
+        query = '''
+        mutation {
+            requestJoinEvent(eventId: "%s", phone: "%s") {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.user.phone)
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("requestJoinEvent", {})
+
+        self.assertTrue(data["success"], "Request to join event should be successful.")
+        self.assertEqual(data["message"], "Request to join the event has been sent successfully.")
+
+        # بررسی اینکه درخواست ذخیره شده است
+        user_event_role = UserEventRole.objects.get(user=self.user, event=self.event)
+        self.assertIsNone(user_event_role.is_approved, "User request should be pending.")
+        self.assertEqual(user_event_role.role, "regular", "Default role should be 'regular'.")
+
+    def test_request_join_event_already_requested(self):
+        # ثبت درخواست اول
+        UserEventRole.objects.create(user=self.user, event=self.event, role="regular", is_approved=None)
+
+        # ارسال درخواست دوباره
+        query = '''
+        mutation {
+            requestJoinEvent(eventId: "%s", phone: "%s") {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.user.phone)
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("requestJoinEvent", {})
+
+        self.assertFalse(data["success"], "Second request to join should fail.")
+        self.assertEqual(data["message"], "You have already requested to join this event.")
+
+
+class TestReviewJoinRequest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربران تستی
+        cls.owner = User.objects.create_user(
+            phone="09123456789",
+            password="ownerpassword"
+        )
+
+        cls.user = User.objects.create_user(
+            phone="09123456788",
+            password="userpassword"
+        )
+
+        # ساخت ایونت تستی
+        cls.event = Event.objects.create(
+            title="Test Event",
+            event_category="education",
+            about_event="This is a test event.",
+            start_date="2024-01-01 10:00:00",
+            end_date="2024-01-05 18:00:00",
+            registration_start_date="2023-12-20 10:00:00",
+            registration_end_date="2023-12-30 18:00:00",
+            full_description="This is the full description of the test event.",
+            max_subscribers=100,
+            event_owner=cls.owner
+        )
+
+        # ایجاد درخواست کاربر
+        UserEventRole.objects.create(user=cls.user, event=cls.event, role="regular", is_approved=None)
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_approve_join_request(self):
+        query = '''
+        mutation {
+            reviewJoinRequest(
+                eventId: "%s",
+                userId: "%s",
+                action: "approve",
+                role: "admin",
+                ownerPhone: "%s"
+            ) {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.user.id, self.owner.phone)
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("reviewJoinRequest", {})
+
+        self.assertTrue(data["success"], "Join request approval should be successful.")
+        self.assertEqual(data["message"], "User request approved successfully with role 'admin'.")
+
+        # بررسی اینکه درخواست تایید شده است
+        user_event_role = UserEventRole.objects.get(user=self.user, event=self.event)
+        self.assertTrue(user_event_role.is_approved, "Join request should be approved.")
+        self.assertEqual(user_event_role.role, "admin", "Role should be set to 'admin'.")
+
+    def test_reject_join_request(self):
+        query = '''
+        mutation {
+            reviewJoinRequest(
+                eventId: "%s",
+                userId: "%s",
+                action: "reject",
+                ownerPhone: "%s"
+            ) {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.user.id, self.owner.phone)
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("reviewJoinRequest", {})
+
+        self.assertTrue(data["success"], "Join request rejection should be successful.")
+        self.assertEqual(data["message"], "User request rejected successfully.")
+
+        # بررسی اینکه درخواست رد شده است
+        user_event_role = UserEventRole.objects.get(user=self.user, event=self.event)
+        self.assertFalse(user_event_role.is_approved, "Join request should be rejected.")
+
+    def test_invalid_action(self):
+        query = '''
+        mutation {
+            reviewJoinRequest(
+                eventId: "%s",
+                userId: "%s",
+                action: "invalid",
+                ownerPhone: "%s"
+            ) {
+                success
+                message
+            }
+        }
+        ''' % (self.event.id, self.user.id, self.owner.phone)
+
+        response = self.client.execute(query)
+        data = response.get("data", {}).get("reviewJoinRequest", {})
+
+        self.assertFalse(data["success"], "Invalid action should fail.")
+        self.assertEqual(data["message"], "Invalid action provided.")
