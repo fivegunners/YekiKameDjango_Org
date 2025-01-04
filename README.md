@@ -84,4 +84,4 @@ python manage.py test Eventapp.tests
 
 - **GraphQL Support**: This project includes GraphQL capabilities, which can be accessed at `/graphql/`.
 
-workflow test4444
+workflow test44444
