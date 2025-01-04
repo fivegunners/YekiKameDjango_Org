@@ -97,9 +97,13 @@ query {
 
 ### Create a New Event
 
+The `createEvent` mutation allows you to create a new event with all its details, including the option to upload an image.
+
+---
+
 #### Request:
 ```graphql
-mutation {
+mutation ($image: Upload!) {
     createEvent(
         title: "Event in Tehran",
         eventCategory: "education",
@@ -115,7 +119,8 @@ mutation {
         registrationEndDate: "2024-12-21T18:00:00+00:00",
         fullDescription: "This is the full description of the event.",
         maxSubscribers: 100,
-        eventOwnerPhone: "09123456789"
+        eventOwnerPhone: "09123456789",
+        image: $image
     ) {
         event {
             id
@@ -125,11 +130,22 @@ mutation {
             startDate
             neighborhood
             maxSubscribers
+            image
         }
     }
 }
-
 ```
+
+---
+
+#### Variables:
+```json
+{
+    "image": null
+}
+```
+
+---
 
 #### Response:
 ```json
@@ -143,12 +159,35 @@ mutation {
                 "city": "تهران",
                 "neighborhood": "تهرانپارس",
                 "startDate": "2024-12-22T10:00:00+00:00",
-                "maxSubscribers": 100
+                "maxSubscribers": 100,
+                "image": "event_images/example.jpg"
             }
         }
     }
 }
 ```
+
+---
+
+#### Description:
+- **Required Fields:**
+  - `title`: The title of the event.
+  - `eventCategory`: The category of the event (`education`, `sport`, etc.).
+  - `aboutEvent`: A brief description of the event.
+  - `startDate` and `endDate`: The start and end dates/times of the event.
+  - `province` and `city`: The location of the event.
+  - `registrationStartDate` and `registrationEndDate`: The registration period for the event.
+  - `maxSubscribers`: The maximum number of participants.
+  - `eventOwnerPhone`: The phone number of the event owner.
+- **Optional Fields:**
+  - `neighborhood`: The neighborhood where the event takes place.
+  - `postalAddress` and `postalCode`: The address and postal code of the event location.
+  - `image`: An image representing the event, uploaded via the `Upload` scalar.
+
+#### Behavior:
+- Validates that `endDate > startDate` and `registrationEndDate > registrationStartDate`.
+- Stores the uploaded image in the `event_images/` directory.
+- Returns the created event details, including the `id`, `title`, and `image` path if provided.
 
 ## Review and Comment Mutations
 

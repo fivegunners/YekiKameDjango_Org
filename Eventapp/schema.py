@@ -6,6 +6,7 @@ from userapp.models import User
 import random
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
+from graphene_file_upload.scalars import Upload
 
 
 class EventType(DjangoObjectType):
@@ -176,13 +177,14 @@ class CreateEvent(graphene.Mutation):
         postal_code = graphene.String(required=False)  # کد پستی
         max_subscribers = graphene.Int(required=True)
         event_owner_phone = graphene.String(required=True)  # شماره تلفن مالک رویداد
+        image = Upload(required=False)  # آپلود فایل تصویر
 
     event = graphene.Field(EventType)
 
     def mutate(self, info, title, event_category, about_event, start_date, end_date,
                registration_start_date, registration_end_date, province, city,
                max_subscribers, event_owner_phone,
-               neighborhood=None, postal_address=None, postal_code=None):
+               neighborhood=None, postal_address=None, postal_code=None, image=None):
         # بررسی تاریخ‌های رویداد
         if end_date <= start_date:
             raise ValueError("End date must be after start date")
@@ -194,6 +196,12 @@ class CreateEvent(graphene.Mutation):
             event_owner = User.objects.get(phone=event_owner_phone)
         except User.DoesNotExist:
             raise ValueError("User with this phone number does not exist")
+
+        image_path = None
+        if image:
+            image_path = f"event_images/{image.name}"
+            with open(image_path, "wb") as f:
+                f.write(image.read())
 
         # ایجاد رویداد
         event = Event.objects.create(
@@ -211,6 +219,7 @@ class CreateEvent(graphene.Mutation):
             postal_code=postal_code,
             max_subscribers=max_subscribers,
             event_owner=event_owner,
+            image=image_path,
         )
 
         return CreateEvent(event=event)
