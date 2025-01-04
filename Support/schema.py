@@ -9,7 +9,7 @@ from django.utils.timezone import now
 class UserType(DjangoObjectType):
     class Meta:
         model = User
-        fields = ("id", "phone", "fullname", "email")
+        fields = ("id", "phone", "fullname", "email", "is_admin")
 
 
 class FAQType(DjangoObjectType):

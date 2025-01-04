@@ -53,6 +53,7 @@ query {
         subscriberCount
         startDate
         neighborhood
+        image
     }
 }
 ```
@@ -68,7 +69,8 @@ query {
                 "eventCategory": "game",
                 "subscriberCount": 80,
                 "neighborhood": "بلوار حافظ",
-                "startDate": "2024-12-01T09:00:00+00"
+                "startDate": "2024-12-01T09:00:00+00",
+                "image": "event_images/event1.jpg"
             },
             {
                 "id": 2,
@@ -76,7 +78,8 @@ query {
                 "eventCategory": "sport",
                 "subscriberCount": 50,
                 "neighborhood": "خیابان امام رضا (ع)",
-                "startDate": "2024-12-01T09:00:00+00"
+                "startDate": "2024-12-01T09:00:00+00",
+                "image": null
             },
             {
                 "id": 3,
@@ -84,7 +87,8 @@ query {
                 "eventCategory": "education",
                 "neighborhood": "تهرانپارس",
                 "subscriberCount": 20,
-                "startDate": "2024-12-01T09:00:00+00"
+                "startDate": "2024-12-01T09:00:00+00",
+                "image": "event_images/event3.jpg"
             }
         ]
     }
@@ -97,9 +101,13 @@ query {
 
 ### Create a New Event
 
+The `createEvent` mutation allows you to create a new event with all its details, including the option to upload an image.
+
+---
+
 #### Request:
 ```graphql
-mutation {
+mutation ($image: Upload!) {
     createEvent(
         title: "Event in Tehran",
         eventCategory: "education",
@@ -115,7 +123,8 @@ mutation {
         registrationEndDate: "2024-12-21T18:00:00+00:00",
         fullDescription: "This is the full description of the event.",
         maxSubscribers: 100,
-        eventOwnerPhone: "09123456789"
+        eventOwnerPhone: "09123456789",
+        image: $image
     ) {
         event {
             id
@@ -125,11 +134,22 @@ mutation {
             startDate
             neighborhood
             maxSubscribers
+            image
         }
     }
 }
-
 ```
+
+---
+
+#### Variables:
+```json
+{
+    "image": null
+}
+```
+
+---
 
 #### Response:
 ```json
@@ -143,12 +163,36 @@ mutation {
                 "city": "تهران",
                 "neighborhood": "تهرانپارس",
                 "startDate": "2024-12-22T10:00:00+00:00",
-                "maxSubscribers": 100
+                "maxSubscribers": 100,
+                "image": "event_images/example.jpg"
             }
         }
     }
 }
 ```
+
+---
+
+#### Description:
+- **Required Fields:**
+  - `title`: The title of the event.
+  - `eventCategory`: The category of the event (`education`, `sport`, etc.).
+  - `aboutEvent`: A brief description of the event.
+  - `startDate` and `endDate`: The start and end dates/times of the event.
+  - `province` and `city`: The location of the event.
+  - `registrationStartDate` and `registrationEndDate`: The registration period for the event.
+  - `maxSubscribers`: The maximum number of participants.
+  - `eventOwnerPhone`: The phone number of the event owner.
+- **Optional Fields:**
+  - `neighborhood`: The neighborhood where the event takes place.
+  - `postalAddress` and `postalCode`: The address and postal code of the event location.
+  - `image`: An image representing the event, uploaded via the `Upload` scalar.
+
+#### Behavior:
+- Validates that `endDate > startDate` and `registrationEndDate > registrationStartDate`.
+- Stores the uploaded image in the `event_images/` directory.
+- Returns the created event details, including the `id`, `title`, and `image` path if provided.
+
 
 ## Review and Comment Mutations
 
@@ -338,6 +382,7 @@ query {
         event {
             id
             title
+            image
             eventCategory
             aboutEvent
             startDate
@@ -368,6 +413,7 @@ query {
             "event": {
                 "id": "1",
                 "title": "Event in Tehran",
+                "image": "event_images/event1.jpg",
                 "eventCategory": "education",
                 "aboutEvent": "This is a detailed description of the event.",
                 "startDate": "2024-12-22T10:00:00+00:00",
@@ -416,8 +462,13 @@ The `relatedEvents` query allows you to fetch up to 5 events that share the same
 ```graphql
 query {
     relatedEvents(eventId: "1") {
+        id
         title
         eventCategory
+        subscriberCount
+        startDate
+        neighborhood
+        image
     }
 }
 ```
@@ -428,24 +479,49 @@ query {
     "data": {
         "relatedEvents": [
             {
+                "id": 1,
                 "title": "Related Event 1",
-                "eventCategory": "education"
+                "eventCategory": "education",
+                "subscriberCount": 50,
+                "startDate": "2024-12-22T10:00:00+00:00",
+                "neighborhood": "تهرانپارس",
+                "image": "event_images/event1.jpg"
             },
             {
+                "id": 4,
                 "title": "Related Event 2",
-                "eventCategory": "education"
+                "eventCategory": "education",
+                "subscriberCount": 100,
+                "startDate": "2024-08-22T10:00:00+00:00",
+                "neighborhood": "خاک سفید",
+                "image": "event_images/event4.jpg"
             },
             {
+                "id": 6,
                 "title": "Related Event 3",
-                "eventCategory": "education"
+                "eventCategory": "education",
+                "subscriberCount": 94,
+                "startDate": "2024-09-22T10:00:00+00:00",
+                "neighborhood": "گیشا",
+                "image": "event_images/event6.jpg"
             },
             {
+                "id": 98,
                 "title": "Related Event 4",
-                "eventCategory": "education"
+                "eventCategory": "education",
+                "subscriberCount": 15,
+                "startDate": "2024-16-22T10:00:00+00:00",
+                "neighborhood": "دربند",
+                "image": "event_images/event98.jpg"
             },
             {
+                "id": 45,
                 "title": "Related Event 5",
-                "eventCategory": "education"
+                "eventCategory": "education",
+                "subscriberCount": 75,
+                "startDate": "2024-13-22T10:00:00+00:00",
+                "neighborhood": "نارمک",
+                "image": "event_images/event45.jpg"
             }
         ]
     }
@@ -524,7 +600,8 @@ mutation {
         eventId: "1",
         phone: "09123456788",
         aboutEvent: "Admin updated description",
-        startDate: "2024-01-03T10:00:00+00:00"
+        startDate: "2024-01-03T10:00:00+00:00",
+        image: "event_images/event1.jpg"
     ) {
         success
         message
@@ -595,9 +672,13 @@ The `filteredEvents` query allows you to dynamically filter events using the fol
 ```graphql
 query {
     filteredEvents(city: "Tehran") {
+        id
         title
-        city
+        eventCategory
+        subscriberCount
         startDate
+        neighborhood
+        image
     }
 }
 ```
@@ -608,19 +689,31 @@ query {
     "data": {
         "filteredEvents": [
             {
-                "title": "Event 3",
-                "city": "Tehran",
-                "startDate": "2024-01-03T10:00:00+00:00"
+                "id": 45,
+                "title": "Event 45",
+                "eventCategory": "education",
+                "subscriberCount": 75,
+                "startDate": "2024-13-22T10:00:00+00:00",
+                "neighborhood": "نارمک",
+                "image": "event_images/event45.jpg"
             },
             {
-                "title": "Event 2",
-                "city": "Tehran",
-                "startDate": "2024-01-02T10:00:00+00:00"
+                "id": 98,
+                "title": "Event 98",
+                "eventCategory": "education",
+                "subscriberCount": 150,
+                "startDate": "2025-17-22T10:00:00+00:00",
+                "neighborhood": "باغ فیض",
+                "image": "event_images/event98.jpg"
             },
             {
-                "title": "Event 1",
-                "city": "Tehran",
-                "startDate": "2024-01-01T10:00:00+00:00"
+                "id": 33,
+                "title": "Event 33",
+                "eventCategory": "Entertainment",
+                "subscriberCount": 20,
+                "startDate": "2025-19-22T10:00:00+00:00",
+                "neighborhood": "امیریه",
+                "image": "event_images/event33.jpg"
             }
         ]
     }
@@ -646,14 +739,22 @@ query {
     "data": {
         "filteredEvents": [
             {
-                "title": "Event 2",
+                "id": 45,
+                "title": "Event 45",
                 "eventCategory": "education",
-                "startDate": "2024-01-02T10:00:00+00:00"
+                "subscriberCount": 75,
+                "startDate": "2024-13-22T10:00:00+00:00",
+                "neighborhood": "نارمک",
+                "image": "event_images/event45.jpg"
             },
             {
-                "title": "Event 1",
+                "id": 98,
+                "title": "Event 98",
                 "eventCategory": "education",
-                "startDate": "2024-01-01T10:00:00+00:00"
+                "subscriberCount": 150,
+                "startDate": "2025-17-22T10:00:00+00:00",
+                "neighborhood": "باغ فیض",
+                "image": "event_images/event98.jpg"
             }
         ]
     }
@@ -665,7 +766,7 @@ query {
 ### Request (By City and Neighborhood):
 ```graphql
 query {
-    filteredEvents(city: "Tehran", neighborhood: "Neighborhood 1") {
+    filteredEvents(city: "Tehran", neighborhood: "باغ فیض") {
         title
         neighborhood
         startDate
@@ -679,14 +780,22 @@ query {
     "data": {
         "filteredEvents": [
             {
-                "title": "Event 3",
-                "neighborhood": "Neighborhood 1",
-                "startDate": "2024-01-03T10:00:00+00:00"
+                "id": 47,
+                "title": "Event 47",
+                "eventCategory": "education",
+                "subscriberCount": 75,
+                "startDate": "2025-02-22T10:00:00+00:00",
+                "neighborhood": "باغ فیض",
+                "image": "event_images/event47.jpg"
             },
             {
-                "title": "Event 1",
-                "neighborhood": "Neighborhood 1",
-                "startDate": "2024-01-01T10:00:00+00:00"
+                "id": 98,
+                "title": "Event 98",
+                "eventCategory": "education",
+                "subscriberCount": 150,
+                "startDate": "2025-17-22T10:00:00+00:00",
+                "neighborhood": "باغ فیض",
+                "image": "event_images/event98.jpg"
             }
         ]
     }
@@ -757,7 +866,7 @@ query {
                 "city": "Tehran",
                 "eventCategory": "education",
                 "neighborhood": "Neighborhood 1",
-                "image": "event1.jpg",
+                "image": "event_images/event1.jpg",
                 "startDate": "2024-01-01T10:00:00+00:00"
             }
         ]
