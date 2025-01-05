@@ -103,6 +103,14 @@ class Query(graphene.ObjectType):
     )
     check_join_request_status = graphene.Field(CheckJoinRequestStatus, phone=graphene.String(required=True),
                                                event_id=graphene.ID(required=True))
+    events_by_owner = graphene.List(EventType, phone=graphene.String(required=True))
+
+    def resolve_events_by_owner(self, info, phone):
+        try:
+            user = User.objects.get(phone=phone)
+            return Event.objects.filter(event_owner=user).order_by('-start_date')
+        except User.DoesNotExist:
+            return []
 
     def resolve_check_join_request_status(self, info, phone, event_id):
         return CheckJoinRequestStatus().resolve(info, phone, event_id)

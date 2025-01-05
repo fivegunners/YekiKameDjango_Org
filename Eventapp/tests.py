@@ -1281,3 +1281,102 @@ class TestDeleteEvent(TestCase):
 
         self.assertFalse(data["success"], "Deleting a non-existent event should fail.")
         self.assertEqual(data["message"], "Event not found.")
+
+
+class TestEventsByOwnerQuery(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.owner = User.objects.create_user(
+            phone="09123456789",
+            password="ownerpassword"
+        )
+
+        cls.other_user = User.objects.create_user(
+            phone="09123456788",
+            password="otherpassword"
+        )
+
+        # ساخت رویدادهای تستی
+        Event.objects.create(
+            title="Event 1",
+            event_category="education",
+            start_date="2024-12-22T10:00:00",
+            end_date="2024-12-22T18:00:00",
+            city="تهران",
+            max_subscribers=100,
+            event_owner=cls.owner
+        )
+        Event.objects.create(
+            title="Event 2",
+            event_category="sport",
+            start_date="2024-12-23T15:00:00",
+            end_date="2024-12-23T20:00:00",
+            city="کرج",
+            max_subscribers=50,
+            event_owner=cls.owner
+        )
+        Event.objects.create(
+            title="Event 3",
+            event_category="music",
+            start_date="2024-12-24T18:00:00",
+            end_date="2024-12-24T21:00:00",
+            city="اصفهان",
+            max_subscribers=30,
+            event_owner=cls.other_user
+        )
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_events_by_owner_query(self):
+        query = '''
+        query {
+            eventsByOwner(phone: "09123456789") {
+                id
+                title
+                eventCategory
+                startDate
+                endDate
+                city
+                maxSubscribers
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        events = response.get("data", {}).get("eventsByOwner", [])
+
+        # بررسی تعداد رویدادها
+        self.assertEqual(len(events), 2, "There should be 2 events for the owner.")
+
+        # بررسی اطلاعات رویدادها
+        self.assertEqual(events[0]["title"], "Event 2", "The first event title should match.")
+        self.assertEqual(events[0]["eventCategory"], "SPORT", "The first event category should match.")
+        self.assertEqual(events[0]["city"], "کرج", "The first event city should match.")
+
+        self.assertEqual(events[1]["title"], "Event 1", "The second event title should match.")
+        self.assertEqual(events[1]["eventCategory"], "EDUCATION", "The second event category should match.")
+        self.assertEqual(events[1]["city"], "تهران", "The second event city should match.")
+
+    def test_events_by_owner_no_events(self):
+        query = '''
+        query {
+            eventsByOwner(phone: "09111234567") {
+                id
+                title
+                eventCategory
+                startDate
+                endDate
+                city
+                maxSubscribers
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        events = response.get("data", {}).get("eventsByOwner", [])
+
+        # بررسی اینکه هیچ رویدادی یافت نشده است
+        self.assertEqual(len(events), 0, "There should be no events for a non-existent owner.")
