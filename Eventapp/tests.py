@@ -1492,3 +1492,109 @@ class TestUserEventsQuery(TestCase):
 
         # بررسی اینکه هیچ رویدادی یافت نشده است
         self.assertEqual(len(events), 0, "There should be no events for a non-existent user.")
+
+
+class TestAdminEventsQuery(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # ساخت کاربر تستی
+        cls.user = User.objects.create_user(
+            phone="09123456789",
+            password="userpassword"
+        )
+
+        cls.other_user = User.objects.create_user(
+            phone="09123456788",
+            password="otherpassword"
+        )
+
+        # ساخت ایونت‌های تستی
+        cls.event1 = Event.objects.create(
+            title="Admin Event 1",
+            event_category="education",
+            start_date="2024-12-22T10:00:00",
+            end_date="2024-12-22T18:00:00",
+            city="تهران",
+            max_subscribers=100,
+            event_owner=cls.other_user
+        )
+
+        cls.event2 = Event.objects.create(
+            title="Admin Event 2",
+            event_category="sport",
+            start_date="2024-12-23T15:00:00",
+            end_date="2024-12-23T20:00:00",
+            city="کرج",
+            max_subscribers=50,
+            event_owner=cls.other_user
+        )
+
+        cls.event3 = Event.objects.create(
+            title="Regular Event",
+            event_category="game",
+            start_date="2024-12-24T18:00:00",
+            end_date="2024-12-24T21:00:00",
+            city="اصفهان",
+            max_subscribers=30,
+            event_owner=cls.other_user
+        )
+
+        # تنظیم روابط کاربر با رویدادها
+        UserEventRole.objects.create(user=cls.user, event=cls.event1, is_approved=True, role="admin")
+        UserEventRole.objects.create(user=cls.user, event=cls.event2, is_approved=True, role="admin")
+        UserEventRole.objects.create(user=cls.user, event=cls.event3, is_approved=True, role="regular")
+
+    def setUp(self):
+        # ایجاد یک کلاینت GraphQL
+        self.client = Client(schema)
+
+    def test_admin_events_query(self):
+        query = '''
+        query {
+            adminEvents(phone: "09123456789") {
+                id
+                title
+                eventCategory
+                startDate
+                endDate
+                city
+                maxSubscribers
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        events = response.get("data", {}).get("adminEvents", [])
+
+        # بررسی تعداد رویدادها
+        self.assertEqual(len(events), 2, "There should be 2 admin events for the user.")
+
+        # بررسی اطلاعات رویدادها
+        self.assertEqual(events[0]["title"], "Admin Event 2", "The first admin event title should match.")
+        self.assertEqual(events[0]["eventCategory"], "SPORT", "The first admin event category should match.")
+        self.assertEqual(events[0]["city"], "کرج", "The first admin event city should match.")
+
+        self.assertEqual(events[1]["title"], "Admin Event 1", "The second admin event title should match.")
+        self.assertEqual(events[1]["eventCategory"], "EDUCATION", "The second admin event category should match.")
+        self.assertEqual(events[1]["city"], "تهران", "The second admin event city should match.")
+
+    def test_admin_events_no_events(self):
+        query = '''
+        query {
+            adminEvents(phone: "09111234567") {
+                id
+                title
+                eventCategory
+                startDate
+                endDate
+                city
+                maxSubscribers
+            }
+        }
+        '''
+
+        response = self.client.execute(query)
+        events = response.get("data", {}).get("adminEvents", [])
+
+        # بررسی اینکه هیچ رویدادی یافت نشده است
+        self.assertEqual(len(events), 0, "There should be no admin events for a non-existent user.")

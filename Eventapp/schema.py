@@ -105,6 +105,18 @@ class Query(graphene.ObjectType):
                                                event_id=graphene.ID(required=True))
     events_by_owner = graphene.List(EventType, phone=graphene.String(required=True))
     user_events = graphene.List(EventType, phone=graphene.String(required=True))
+    admin_events = graphene.List(EventType, phone=graphene.String(required=True))
+
+    def resolve_admin_events(self, info, phone):
+        try:
+            user = User.objects.get(phone=phone)
+            return Event.objects.filter(
+                subscribers=user,
+                usereventrole__is_approved=True,
+                usereventrole__role='admin'
+            ).order_by('-start_date')
+        except User.DoesNotExist:
+            return []
 
     def resolve_user_events(self, info, phone):
         try:
