@@ -398,10 +398,17 @@ class TestUserTicketsQuery(TestCase):
 class TestTicketMessagesQuery(TestCase):
     @classmethod
     def setUpTestData(cls):
-        # ساخت کاربر تستی
+        # ساخت کاربران تستی
         cls.user = User.objects.create_user(
             phone="09123456789",
-            password="userpassword"
+            password="userpassword",
+            is_admin=False
+        )
+
+        cls.admin_user = User.objects.create_user(
+            phone="09111234567",
+            password="adminpassword",
+            is_admin=True
         )
 
         # ساخت تیکت تستی
@@ -422,7 +429,7 @@ class TestTicketMessagesQuery(TestCase):
         )
         TicketMessage.objects.create(
             ticket=cls.ticket,
-            user=cls.user,
+            user=cls.admin_user,
             message="Second message",
             created_at="2024-01-02 12:00:00"
         )
@@ -441,6 +448,7 @@ class TestTicketMessagesQuery(TestCase):
                 user {
                     phone
                     fullname
+                    isAdmin
                 }
             }
         }
@@ -452,12 +460,15 @@ class TestTicketMessagesQuery(TestCase):
         # بررسی تعداد پیام‌ها
         self.assertEqual(len(messages), 2, "There should be 2 messages for the ticket.")
 
-        # بررسی اطلاعات پیام‌ها
+        # بررسی اطلاعات پیام‌های کاربر معمولی
         self.assertEqual(messages[0]["message"], "First message", "The first message content should match.")
         self.assertEqual(messages[0]["user"]["phone"], "09123456789", "The first message user phone should match.")
+        self.assertFalse(messages[0]["user"]["isAdmin"], "The first message user should not be an admin.")
 
+        # بررسی اطلاعات پیام‌های کاربر ادمین
         self.assertEqual(messages[1]["message"], "Second message", "The second message content should match.")
-        self.assertEqual(messages[1]["user"]["phone"], "09123456789", "The second message user phone should match.")
+        self.assertEqual(messages[1]["user"]["phone"], "09111234567", "The second message user phone should match.")
+        self.assertTrue(messages[1]["user"]["isAdmin"], "The second message user should be an admin.")
 
     def test_ticket_messages_no_ticket_found(self):
         query = '''

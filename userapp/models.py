@@ -3,15 +3,17 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, phone, password=None):
+    def create_user(self, phone, password=None, **extra_fields):
         """
-        Creates and saves a User with the given email, and password.
+        Creates and saves a User with the given phone and password.
         """
-
+        if not phone:
+            raise ValueError("The Phone field must be set")
+        extra_fields.setdefault('is_admin', False)  # مقدار پیش‌فرض برای is_admin
         user = self.model(
             phone=phone,
+            **extra_fields
         )
-
         user.set_password(password)
         user.save(using=self._db)
         return user
