@@ -1330,6 +1330,85 @@ If the user has no approved events or the phone number does not exist:
   - `city`: The city where the event takes place.
   - `maxSubscribers`: The maximum number of participants allowed for the event.
 
+
+## Query: User's Admin Events
+
+The `adminEvents` query allows you to retrieve all events where the user is approved (`is_approved=True`) and has the role of `admin`.
+
+### Request:
+```graphql
+query {
+    adminEvents(phone: "09123456789") {
+        id
+        title
+        eventCategory
+        startDate
+        endDate
+        city
+        maxSubscribers
+    }
+}
+```
+
+### Responses:
+
+#### Successful Request:
+If events exist for the user as an admin:
+```json
+{
+    "data": {
+        "adminEvents": [
+            {
+                "id": "1",
+                "title": "Admin Event 2",
+                "eventCategory": "technology",
+                "startDate": "2024-12-23T15:00:00+00:00",
+                "endDate": "2024-12-23T20:00:00+00:00",
+                "city": "کرج",
+                "maxSubscribers": 50
+            },
+            {
+                "id": "2",
+                "title": "Admin Event 1",
+                "eventCategory": "management",
+                "startDate": "2024-12-22T10:00:00+00:00",
+                "endDate": "2024-12-22T18:00:00+00:00",
+                "city": "تهران",
+                "maxSubscribers": 100
+            }
+        ]
+    }
+}
+```
+
+#### No Events Found:
+If the user has no admin events or the phone number does not exist:
+```json
+{
+    "data": {
+        "adminEvents": []
+    }
+}
+```
+
+---
+
+### Description:
+- **`phone`**: The phone number of the user whose admin events are being fetched.
+
+### Behavior:
+- Returns all events where:
+  - The user is approved (`is_approved=True`).
+  - The user has the role `admin`.
+- Each event includes the following fields:
+  - `id`: The unique identifier of the event.
+  - `title`: The title of the event.
+  - `eventCategory`: The category of the event (e.g., technology, management).
+  - `startDate` and `endDate`: The start and end dates/times of the event.
+  - `city`: The city where the event takes place.
+  - `maxSubscribers`: The maximum number of participants allowed for the event.
+
+
 ---
 
 This document provides the necessary information to test and implement the GraphQL API interactions for event management in your project.
