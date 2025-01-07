@@ -324,6 +324,7 @@ query {
         user {
             phone
             fullname
+            isAdmin
         }
     }
 }
@@ -343,7 +344,8 @@ If messages exist for the ticket:
                 "createdAt": "2024-01-01T10:00:00+00:00",
                 "user": {
                     "phone": "09123456789",
-                    "fullname": "John Doe"
+                    "fullname": "John Doe",
+                    "isAdmin": "False"
                 }
             },
             {
@@ -351,8 +353,9 @@ If messages exist for the ticket:
                 "message": "Second message",
                 "createdAt": "2024-01-02T12:00:00+00:00",
                 "user": {
-                    "phone": "09123456789",
-                    "fullname": "John Doe"
+                    "phone": "09386385040",
+                    "fullname": "ghost",
+                    "isAdmin": "False"
                 }
             }
         ]
