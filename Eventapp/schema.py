@@ -58,6 +58,15 @@ class EventDetailResponseType(graphene.ObjectType):
     error = graphene.String()
 
 
+class UserEventRoleType(DjangoObjectType):
+    event = graphene.Field(EventType)
+    user = graphene.Field(UserType)
+
+    class Meta:
+        model = UserEventRole
+        fields = ('id', 'role', 'is_approved')
+
+
 class CheckJoinRequestStatus(graphene.ObjectType):
     message = graphene.String()
 
