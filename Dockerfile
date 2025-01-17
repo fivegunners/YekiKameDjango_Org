@@ -4,11 +4,12 @@ FROM python:3.10-slim
 # Ensure sources.list exists and switch to a reliable mirror
 RUN echo "deb http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list && \
     echo "deb http://deb.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list && \
-    echo "deb http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list
+    echo "deb http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list && \
+    sed -i '/^deb.*main$/d' /etc/apt/sources.list.d/debian.sources
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    netcat \
+    netcat-openbsd \
     libpq-dev \
     gcc \
     --no-install-recommends \
@@ -34,9 +35,6 @@ RUN chmod +x /wait-for-it.sh
 
 # Copy project files
 COPY . /app/
-
-# Collect static files if necessary (uncomment if Django project)
-# RUN python manage.py collectstatic --noinput
 
 # Expose the port the app runs on
 EXPOSE 8000
