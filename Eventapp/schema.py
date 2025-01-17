@@ -58,6 +58,15 @@ class EventDetailResponseType(graphene.ObjectType):
     error = graphene.String()
 
 
+class UserEventRoleType(DjangoObjectType):
+    event = graphene.Field(EventType)
+    user = graphene.Field(UserType)
+
+    class Meta:
+        model = UserEventRole
+        fields = ('id', 'role', 'is_approved')
+
+
 class CheckJoinRequestStatus(graphene.ObjectType):
     message = graphene.String()
 
@@ -198,6 +207,7 @@ class CreateEvent(graphene.Mutation):
         title = graphene.String(required=True)
         event_category = graphene.String(required=True)
         about_event = graphene.String(required=True)
+        image = Upload(required=False)  # آپلود فایل تصویر
         start_date = graphene.DateTime(required=True)
         end_date = graphene.DateTime(required=True)
         registration_start_date = graphene.DateTime(required=True)
@@ -207,16 +217,17 @@ class CreateEvent(graphene.Mutation):
         neighborhood = graphene.String(required=False)  # محله
         postal_address = graphene.String(required=False)  # آدرس پستی
         postal_code = graphene.String(required=False)  # کد پستی
+        full_description = graphene.String(required=False)  # توضیحات کامل
         max_subscribers = graphene.Int(required=True)
         event_owner_phone = graphene.String(required=True)  # شماره تلفن مالک رویداد
-        image = Upload(required=False)  # آپلود فایل تصویر
 
     event = graphene.Field(EventType)
 
     def mutate(self, info, title, event_category, about_event, start_date, end_date,
                registration_start_date, registration_end_date, province, city,
                max_subscribers, event_owner_phone,
-               neighborhood=None, postal_address=None, postal_code=None, image=None):
+               neighborhood=None, postal_address=None, postal_code=None,
+               full_description=None, image=None):
         # بررسی تاریخ‌های رویداد
         if end_date <= start_date:
             raise ValueError("End date must be after start date")
@@ -229,6 +240,7 @@ class CreateEvent(graphene.Mutation):
         except User.DoesNotExist:
             raise ValueError("User with this phone number does not exist")
 
+        # ذخیره‌سازی تصویر
         image_path = None
         if image:
             image_path = f"event_images/{image.name}"
@@ -249,6 +261,7 @@ class CreateEvent(graphene.Mutation):
             neighborhood=neighborhood,
             postal_address=postal_address,
             postal_code=postal_code,
+            full_description=full_description,
             max_subscribers=max_subscribers,
             event_owner=event_owner,
             image=image_path,

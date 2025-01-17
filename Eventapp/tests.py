@@ -127,6 +127,7 @@ class EventSchemaTests(TestCase):
                 title: "New Event",
                 eventCategory: "entertainment",
                 aboutEvent: "A new entertainment event.",
+                image: null,
                 startDate: "2024-12-01T09:00:00Z",
                 endDate: "2024-12-01T17:00:00Z",
                 registrationStartDate: "2024-11-01T09:00:00Z",
@@ -136,6 +137,7 @@ class EventSchemaTests(TestCase):
                 neighborhood: "District 1",
                 postalAddress: "Some Street, Tehran",
                 postalCode: "1234567890",
+                fullDescription: "This is the full description of the event.",
                 maxSubscribers: 150,
                 eventOwnerPhone: "09123456789"
             ) {
@@ -143,9 +145,22 @@ class EventSchemaTests(TestCase):
                     id
                     title
                     eventCategory
-                    maxSubscribers
+                    aboutEvent
+                    image
                     startDate
+                    endDate
+                    registrationStartDate
+                    registrationEndDate
+                    province
+                    city
                     neighborhood
+                    postalAddress
+                    postalCode
+                    fullDescription
+                    maxSubscribers
+                    eventOwner {
+                        phone
+                    }
                 }
             }
         }
@@ -159,9 +174,20 @@ class EventSchemaTests(TestCase):
         # بررسی محتوای رویداد ایجاد شده
         self.assertEqual(event_data["title"], "New Event")
         self.assertEqual(event_data["eventCategory"], "ENTERTAINMENT")
-        self.assertEqual(event_data["neighborhood"], "District 1")
+        self.assertEqual(event_data["aboutEvent"], "A new entertainment event.")
+        self.assertIn(event_data["image"], [None, ""], "Image should be None or an empty string")
         self.assertEqual(event_data["startDate"], "2024-12-01T09:00:00+00:00")
+        self.assertEqual(event_data["endDate"], "2024-12-01T17:00:00+00:00")
+        self.assertEqual(event_data["registrationStartDate"], "2024-11-01T09:00:00+00:00")
+        self.assertEqual(event_data["registrationEndDate"], "2024-11-25T17:00:00+00:00")
+        self.assertEqual(event_data["province"], "تهران")
+        self.assertEqual(event_data["city"], "تهران")
+        self.assertEqual(event_data["neighborhood"], "District 1")
+        self.assertEqual(event_data["postalAddress"], "Some Street, Tehran")
+        self.assertEqual(event_data["postalCode"], "1234567890")
+        self.assertEqual(event_data["fullDescription"], "This is the full description of the event.")
         self.assertEqual(event_data["maxSubscribers"], 150)
+        self.assertEqual(event_data["eventOwner"]["phone"], "09123456789")
 
 
 class TestReviewAndCommentMutations(TestCase):
