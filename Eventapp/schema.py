@@ -7,7 +7,7 @@ import random
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from graphene_file_upload.scalars import Upload
-
+from django.utils import timezone
 
 class EventType(DjangoObjectType):
     subscriber_count = graphene.Int()  # اضافه کردن فیلد subscriber_count به صورت دستی
@@ -157,7 +157,12 @@ class Query(graphene.ObjectType):
         return Event.objects.filter(city=city).order_by('-start_date')
 
     def resolve_recent_events(self, info):
-        return Event.objects.annotate(subscriber_count=Count('subscribers')).order_by('-start_date', '-id')[:10]
+        current_date = timezone.now()
+        return Event.objects.filter(
+            registration_end_date__gte=current_date  # فقط رویدادهایی که هنوز تمام نشده‌اند
+        ).annotate(
+            subscriber_count=Count('subscribers')
+        ).order_by('-start_date', '-id')[:10]
 
     def resolve_reviews_by_event(self, info, event_id):
         return Review.objects.filter(event_id=event_id).order_by('-created_at')
@@ -174,26 +179,24 @@ class Query(graphene.ObjectType):
 
     def resolve_related_events(self, info, event_id):
         try:
-            # پیدا کردن ایونت اصلی
+            current_date = timezone.now()
             main_event = Event.objects.get(id=event_id)
 
-            # فیلتر کردن ایونت‌های مرتبط با همان دسته‌بندی
-            # فیلتر کردن ایونت‌های مرتبط که هم دسته‌بندی مشابه و هم در همان شهر هستند
             related_events = Event.objects.filter(
-                        Q(event_category=main_event.event_category) &  # رویدادهای با دسته‌بندی مشابه
-                        Q(city=main_event.city)  # رویدادهای در همان شهر
-                    ).exclude(id=main_event.id)  # حذف خود رویداد از نتایج
+                Q(event_category=main_event.event_category) &
+                Q(city=main_event.city) &
+                Q(registration_end_date__gte=current_date)  # فقط رویدادهای فعال
+            ).exclude(id=main_event.id)
 
-            # انتخاب تصادفی ۵ ایونت از بین موارد مرتبط
             related_events = random.sample(list(related_events), min(len(related_events), 5))
-
             return related_events
         except Event.DoesNotExist:
             return []
 
     def resolve_filtered_events(self, info, city, event_category=None, neighborhood=None, has_image=None):
-        # فیلتر اولیه بر اساس شهر
-        filters = Q(city=city)
+        current_date = timezone.now()
+        # فیلتر اولیه بر اساس شهر و تاریخ
+        filters = Q(city=city) & Q(registration_end_date__gte=current_date)
 
         # افزودن فیلترهای اختیاری
         if event_category:
