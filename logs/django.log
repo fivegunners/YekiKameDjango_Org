@@ -1,0 +1,231 @@
+[2025-01-15 20:42:31] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-15 21:11:04] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-15 21:11:18] INFO django.server "GET /admin HTTP/1.1" 301 0
+[2025-01-15 21:11:18] INFO django.server "GET /admin/ HTTP/1.1" 302 0
+[2025-01-15 21:11:18] INFO django.server "GET /admin/login/?next=/admin/ HTTP/1.1" 200 3818
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin/css/base.css HTTP/1.1" 200 22092
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2804
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin_persian/css/sahel.css HTTP/1.1" 200 303
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin/css/login.css HTTP/1.1" 200 951
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin/css/rtl.css HTTP/1.1" 200 4696
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin/css/responsive.css HTTP/1.1" 200 17972
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin/css/responsive_rtl.css HTTP/1.1" 200 2544
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+[2025-01-15 21:11:18] INFO django.server "GET /static/admin_persian/fonts/sahel/Sahel.woff HTTP/1.1" 200 45376
+[2025-01-15 21:11:18] WARNING django.request Not Found: /favicon.ico
+[2025-01-15 21:11:18] WARNING django.server "GET /favicon.ico HTTP/1.1" 404 2507
+[2025-01-15 21:30:52] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-15 22:38:08] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-15 22:38:30] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-15 22:38:31] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-15 22:38:53] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-15 22:38:57] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-15 22:38:58] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-16 12:00:51] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-16 12:01:01] INFO django.server "GET /admin/ HTTP/1.1" 302 0
+[2025-01-16 12:01:01] INFO django.server "GET /admin/login/?next=/admin/ HTTP/1.1" 200 3818
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin/css/base.css HTTP/1.1" 304 0
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin/css/login.css HTTP/1.1" 304 0
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin_persian/css/sahel.css HTTP/1.1" 304 0
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin/css/rtl.css HTTP/1.1" 304 0
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin/css/responsive.css HTTP/1.1" 304 0
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin/css/responsive_rtl.css HTTP/1.1" 304 0
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin/js/theme.js HTTP/1.1" 304 0
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0
+[2025-01-16 12:01:01] INFO django.server "GET /static/admin_persian/fonts/sahel/Sahel.woff HTTP/1.1" 304 0
+[2025-01-16 12:01:01] WARNING django.request Not Found: /favicon.ico
+[2025-01-16 12:01:01] WARNING django.server "GET /favicon.ico HTTP/1.1" 404 2507
+[2025-01-16 12:11:45] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-16 12:11:47] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-16 12:16:32] INFO django.utils.autoreload C:\Users\Lion\Desktop\yekikame\YekiKameDjango_Org\YekiKamePrj\settings.py changed, reloading.
+[2025-01-16 12:16:32] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-16 12:18:04] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-16 12:18:29] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-16 12:18:29] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-18 19:43:10] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-18 19:43:16] INFO django.server "GET /admin/ HTTP/1.1" 302 0
+[2025-01-18 19:43:16] INFO django.server "GET /admin/login/?next=/admin/ HTTP/1.1" 200 3818
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin/css/base.css HTTP/1.1" 304 0
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin/js/theme.js HTTP/1.1" 304 0
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin_persian/css/sahel.css HTTP/1.1" 304 0
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin/css/login.css HTTP/1.1" 304 0
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin/css/rtl.css HTTP/1.1" 304 0
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin/css/responsive.css HTTP/1.1" 304 0
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin/css/responsive_rtl.css HTTP/1.1" 304 0
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0
+[2025-01-18 19:43:16] INFO django.server "GET /static/admin_persian/fonts/sahel/Sahel.woff HTTP/1.1" 304 0
+[2025-01-18 19:43:16] WARNING django.request Not Found: /favicon.ico
+[2025-01-18 19:43:16] WARNING django.server "GET /favicon.ico HTTP/1.1" 404 2507
+[2025-01-18 19:43:47] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-18 19:43:47] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-18 19:44:01] INFO django.server "POST /graphql/ HTTP/1.1" 200 46
+[2025-01-18 19:44:11] INFO django.server "POST /graphql/ HTTP/1.1" 200 46
+[2025-01-18 19:45:23] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-18 19:45:34] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:45:38] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:46:23] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:46:26] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:46:27] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:51:04] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-18 19:51:28] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:51:32] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:51:34] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:51:35] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:51:35] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:51:39] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 19:51:40] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-18 20:04:40] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-19 11:09:30] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-19 11:10:09] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-19 11:10:09] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-19 11:10:40] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-19 11:10:43] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-19 11:37:36] INFO django.server "POST /graphql/ HTTP/1.1" 200 46
+[2025-01-19 11:37:47] INFO django.server "POST /graphql/ HTTP/1.1" 200 46
+[2025-01-19 11:38:45] INFO django.server "POST /graphql/ HTTP/1.1" 200 46
+[2025-01-19 11:39:22] INFO django.server "POST /graphql/ HTTP/1.1" 200 42
+[2025-01-19 11:39:47] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 11:39:47] INFO django.server "POST /graphql/ HTTP/1.1" 200 82
+[2025-01-19 11:39:49] INFO django.server "POST /graphql/ HTTP/1.1" 200 33
+[2025-01-19 11:39:49] INFO django.server "POST /graphql/ HTTP/1.1" 200 66
+[2025-01-19 11:40:07] INFO django.server "POST /graphql/ HTTP/1.1" 200 87
+[2025-01-19 11:40:09] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 11:40:09] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 11:40:16] INFO django.server "POST /graphql/ HTTP/1.1" 200 30
+[2025-01-19 11:40:20] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 11:42:20] INFO django.server "POST /graphql/ HTTP/1.1" 200 224
+[2025-01-19 11:42:27] INFO django.server "POST /graphql/ HTTP/1.1" 200 29
+[2025-01-19 11:42:40] INFO django.server "POST /graphql/ HTTP/1.1" 200 27
+[2025-01-19 11:42:41] WARNING django.request Bad Request: /graphql/
+[2025-01-19 11:42:41] WARNING django.server "POST /graphql/ HTTP/1.1" 400 172
+[2025-01-19 11:43:34] INFO django.server "POST /graphql/ HTTP/1.1" 200 45
+[2025-01-19 11:44:05] INFO django.server "POST /graphql/ HTTP/1.1" 200 45
+[2025-01-19 11:44:26] INFO django.server "POST /graphql/ HTTP/1.1" 200 87
+[2025-01-19 11:44:27] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 11:44:27] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 11:45:03] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-19 11:46:59] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 11:46:59] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 11:47:01] INFO django.server "POST /graphql/ HTTP/1.1" 200 29
+[2025-01-19 11:47:45] INFO django.server "POST /graphql/ HTTP/1.1" 200 27
+[2025-01-19 11:47:46] WARNING django.request Bad Request: /graphql/
+[2025-01-19 11:47:46] WARNING django.server "POST /graphql/ HTTP/1.1" 400 172
+[2025-01-19 11:47:48] INFO django.server "POST /graphql/ HTTP/1.1" 200 27
+[2025-01-19 11:47:49] INFO django.server "POST /graphql/ HTTP/1.1" 200 29
+[2025-01-19 11:47:53] INFO django.server "POST /graphql/ HTTP/1.1" 200 27
+[2025-01-19 11:47:57] WARNING django.request Bad Request: /graphql/
+[2025-01-19 11:47:57] WARNING django.server "POST /graphql/ HTTP/1.1" 400 172
+[2025-01-19 11:48:03] INFO django.server "POST /graphql/ HTTP/1.1" 200 27
+[2025-01-19 11:51:58] INFO django.server "POST /graphql/ HTTP/1.1" 200 548
+[2025-01-19 11:52:02] INFO django.server "POST /graphql/ HTTP/1.1" 200 584
+[2025-01-19 11:55:47] INFO django.server "POST /graphql/ HTTP/1.1" 200 548
+[2025-01-19 11:55:53] INFO django.server "POST /graphql/ HTTP/1.1" 200 584
+[2025-01-19 11:57:00] INFO django.server "POST /graphql/ HTTP/1.1" 200 548
+[2025-01-19 11:57:06] INFO django.server "POST /graphql/ HTTP/1.1" 200 584
+[2025-01-19 11:57:11] INFO django.server "POST /graphql/ HTTP/1.1" 200 548
+[2025-01-19 21:12:50] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-19 21:13:17] INFO django.server "GET / HTTP/1.1" 302 0
+[2025-01-19 21:13:17] INFO django.server "GET /admin/ HTTP/1.1" 302 0
+[2025-01-19 21:13:18] INFO django.server "GET /admin/login/?next=/admin/ HTTP/1.1" 200 3818
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin/css/base.css HTTP/1.1" 304 0
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin_persian/css/sahel.css HTTP/1.1" 304 0
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin/css/login.css HTTP/1.1" 304 0
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin/css/rtl.css HTTP/1.1" 304 0
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin/css/responsive.css HTTP/1.1" 304 0
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin/css/responsive_rtl.css HTTP/1.1" 304 0
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin/js/theme.js HTTP/1.1" 304 0
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0
+[2025-01-19 21:13:18] INFO django.server "GET /static/admin_persian/fonts/sahel/Sahel.woff HTTP/1.1" 304 0
+[2025-01-19 21:13:18] WARNING django.request Not Found: /favicon.ico
+[2025-01-19 21:13:18] WARNING django.server "GET /favicon.ico HTTP/1.1" 404 2507
+[2025-01-19 21:17:21] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-19 21:17:21] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-19 21:17:34] INFO django.server "POST /graphql/ HTTP/1.1" 200 82
+[2025-01-19 21:17:35] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 21:17:35] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 21:19:42] INFO django.server "POST /graphql/ HTTP/1.1" 200 147
+[2025-01-19 21:19:46] INFO django.server "POST /graphql/ HTTP/1.1" 200 548
+[2025-01-19 21:19:48] INFO django.server "POST /graphql/ HTTP/1.1" 200 548
+[2025-01-19 21:19:56] INFO django.server "POST /graphql/ HTTP/1.1" 200 548
+[2025-01-19 21:20:34] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 21:20:34] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 21:21:55] INFO django.server "POST /graphql/ HTTP/1.1" 200 257
+[2025-01-19 21:22:02] INFO django.server "POST /graphql/ HTTP/1.1" 200 1117
+[2025-01-19 22:25:14] INFO django.utils.autoreload C:\Users\Lion\Desktop\yekikame\YekiKameDjango_Org\Eventapp\schema.py changed, reloading.
+[2025-01-19 22:25:15] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-19 22:25:34] INFO django.utils.autoreload C:\Users\Lion\Desktop\yekikame\YekiKameDjango_Org\Eventapp\schema.py changed, reloading.
+[2025-01-19 22:25:35] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-19 22:28:24] INFO django.server "POST /graphql/ HTTP/1.1" 200 1117
+[2025-01-19 22:28:29] WARNING django.request Bad Request: /graphql/
+[2025-01-19 22:28:29] WARNING django.server "POST /graphql/ HTTP/1.1" 400 156
+[2025-01-19 22:28:31] INFO django.server "POST /graphql/ HTTP/1.1" 200 1117
+[2025-01-19 22:28:33] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-19 22:28:48] INFO django.server "POST /graphql/ HTTP/1.1" 200 1117
+[2025-01-19 22:28:49] WARNING django.request Bad Request: /graphql/
+[2025-01-19 22:28:49] WARNING django.server "POST /graphql/ HTTP/1.1" 400 156
+[2025-01-19 22:29:29] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-19 22:29:38] INFO django.server "GET / HTTP/1.1" 302 0
+[2025-01-19 22:29:38] INFO django.server "GET /admin/ HTTP/1.1" 302 0
+[2025-01-19 22:29:38] INFO django.server "GET /admin/login/?next=/admin/ HTTP/1.1" 200 3818
+[2025-01-19 22:29:50] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-19 22:29:58] INFO django.server "POST /graphql/ HTTP/1.1" 200 1117
+[2025-01-19 22:30:02] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 22:30:02] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 22:30:04] INFO django.server "POST /graphql/ HTTP/1.1" 200 29
+[2025-01-19 22:30:06] INFO django.server "POST /graphql/ HTTP/1.1" 200 27
+[2025-01-19 22:30:06] WARNING django.request Bad Request: /graphql/
+[2025-01-19 22:30:06] WARNING django.server "POST /graphql/ HTTP/1.1" 400 172
+[2025-01-19 22:30:13] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 22:30:39] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 22:30:39] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 22:30:40] INFO django.server "POST /graphql/ HTTP/1.1" 200 1117
+[2025-01-19 22:30:42] WARNING django.request Bad Request: /graphql/
+[2025-01-19 22:30:42] WARNING django.server "POST /graphql/ HTTP/1.1" 400 156
+[2025-01-19 22:31:07] INFO django.utils.autoreload C:\Users\Lion\Desktop\yekikame\YekiKameDjango_Org\Eventapp\schema.py changed, reloading.
+[2025-01-19 22:31:07] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-19 22:31:22] INFO django.server "POST /graphql/ HTTP/1.1" 200 584
+[2025-01-19 22:31:24] INFO django.server "POST /graphql/ HTTP/1.1" 200 584
+[2025-01-19 22:31:42] INFO django.utils.autoreload C:\Users\Lion\Desktop\yekikame\YekiKameDjango_Org\Eventapp\schema.py changed, reloading.
+[2025-01-19 22:31:43] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-19 22:31:50] INFO django.server "POST /graphql/ HTTP/1.1" 200 584
+[2025-01-19 22:31:50] INFO django.server "POST /graphql/ HTTP/1.1" 200 584
+[2025-01-19 22:38:03] WARNING django.request Bad Request: /graphql/
+[2025-01-19 22:38:03] WARNING django.server "POST /graphql/ HTTP/1.1" 400 156
+[2025-01-19 22:38:16] WARNING django.request Bad Request: /graphql/
+[2025-01-19 22:38:16] WARNING django.server "POST /graphql/ HTTP/1.1" 400 156
+[2025-01-19 22:46:02] INFO django.utils.autoreload C:\Users\Lion\Desktop\yekikame\YekiKameDjango_Org\Eventapp\schema.py changed, reloading.
+[2025-01-19 22:46:02] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-19 22:46:09] INFO django.server "POST /graphql/ HTTP/1.1" 200 604
+[2025-01-19 22:55:11] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-19 22:55:18] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 22:55:18] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 22:55:27] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 22:55:27] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 22:55:33] INFO django.server "POST /graphql/ HTTP/1.1" 200 29
+[2025-01-19 22:55:36] INFO django.server "POST /graphql/ HTTP/1.1" 200 1117
+[2025-01-19 22:55:37] INFO django.server "POST /graphql/ HTTP/1.1" 200 634
+[2025-01-19 22:55:49] INFO django.server "POST /graphql/ HTTP/1.1" 200 654
+[2025-01-19 22:55:57] INFO django.server "POST /graphql/ HTTP/1.1" 200 654
+[2025-01-19 22:57:13] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-19 22:57:14] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-19 22:57:14] INFO django.server "POST /graphql/ HTTP/1.1" 200 23
+[2025-01-19 22:57:38] INFO django.server "POST /graphql/ HTTP/1.1" 200 82
+[2025-01-19 22:57:39] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 22:57:39] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 22:59:29] INFO django.server "POST /graphql/ HTTP/1.1" 200 72
+[2025-01-19 22:59:29] INFO django.server "POST /graphql/ HTTP/1.1" 200 39
+[2025-01-19 22:59:32] INFO django.server "POST /graphql/ HTTP/1.1" 200 1117
+[2025-01-19 22:59:34] INFO django.server "POST /graphql/ HTTP/1.1" 200 654
+[2025-01-19 23:03:35] INFO django.server "POST /graphql/ HTTP/1.1" 200 654
+[2025-01-19 23:53:02] INFO django.utils.autoreload Watching for file changes with StatReloader
+[2025-01-19 23:53:06] INFO django.server "OPTIONS /graphql/ HTTP/1.1" 200 0
+[2025-01-19 23:53:06] INFO django.server "POST /graphql/ HTTP/1.1" 200 1117
+[2025-01-19 23:53:10] INFO django.server "POST /graphql/ HTTP/1.1" 200 654

@@ -45,12 +45,17 @@ class EventDetailType(DjangoObjectType):
 
     event_owner = graphene.Field(UserType)
     event_category = graphene.String()
+    subscriber_count = graphene.Int()
 
     def resolve_event_owner(self, info):
         return self.event_owner
 
     def resolve_event_category(self, info):
         return self.event_category
+
+    def resolve_subscriber_count(self, info):
+        return self.subscribers.count()  # محاسبه تعداد subscribers
+
 
 
 class EventDetailResponseType(graphene.ObjectType):
