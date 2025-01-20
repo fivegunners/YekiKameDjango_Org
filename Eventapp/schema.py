@@ -178,9 +178,11 @@ class Query(graphene.ObjectType):
             main_event = Event.objects.get(id=event_id)
 
             # فیلتر کردن ایونت‌های مرتبط با همان دسته‌بندی
+            # فیلتر کردن ایونت‌های مرتبط که هم دسته‌بندی مشابه و هم در همان شهر هستند
             related_events = Event.objects.filter(
-                event_category=main_event.event_category
-            ).exclude(id=main_event.id)
+                        Q(event_category=main_event.event_category) &  # رویدادهای با دسته‌بندی مشابه
+                        Q(city=main_event.city)  # رویدادهای در همان شهر
+                    ).exclude(id=main_event.id)  # حذف خود رویداد از نتایج
 
             # انتخاب تصادفی ۵ ایونت از بین موارد مرتبط
             related_events = random.sample(list(related_events), min(len(related_events), 5))
