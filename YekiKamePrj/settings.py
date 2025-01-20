@@ -64,6 +64,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+<<<<<<< HEAD
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:5173",
 #     "http://localhost:8080",
@@ -71,6 +72,13 @@ MIDDLEWARE = [
 # ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+=======
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://127.0.0.1:9000",
+    "http://localhost:5173",
+]
+>>>>>>> remotes/origin/develope
 
 ROOT_URLCONF = 'YekiKamePrj.urls'
 
