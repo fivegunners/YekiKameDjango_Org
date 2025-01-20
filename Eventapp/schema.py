@@ -120,7 +120,11 @@ class Query(graphene.ObjectType):
     events_by_owner = graphene.List(EventType, phone=graphene.String(required=True))
     user_events = graphene.List(EventType, phone=graphene.String(required=True))
     admin_events = graphene.List(EventType, phone=graphene.String(required=True))
-
+    search_events_by_title = graphene.List(
+        EventType,
+        title=graphene.String(required=True),
+        limit=graphene.Int(default_value=10) 
+    )
     def resolve_admin_events(self, info, phone):
         try:
             user = User.objects.get(phone=phone)
@@ -210,7 +214,13 @@ class Query(graphene.ObjectType):
                 filters &= Q(image__isnull=True) | Q(image="")
 
         return Event.objects.filter(filters).order_by('-start_date')
+    def resolve_search_events_by_title(self, info, title, limit=10):
+        current_date = timezone.now()
 
+        return Event.objects.filter(
+            Q(title__icontains=title) &  # جستجو در عنوان (case-insensitive)
+            Q(registration_end_date__gte=current_date) 
+        ).order_by('-start_date')[:limit]
 
 class CreateEvent(graphene.Mutation):
     class Arguments:
