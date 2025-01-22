@@ -25,15 +25,21 @@ class PastEventType(DjangoObjectType):
     class Meta:
         model = Event
         fields = ('id', 'title', 'start_date', 'end_date', 'event_category', 'neighborhood', 'city')
-
+        convert_choices_to_enum = False
     def resolve_role(self, info):
         context = info.context
         try:
+            # ابتدا بررسی می‌کنیم که آیا کاربر owner است
+            if self.event_owner.phone == context.phone:
+                return "owner"
+            
+            # اگر owner نبود، سایر نقش‌ها را بررسی می‌کنیم
             user_role = UserEventRole.objects.get(
                 event=self,
-                user__phone=context.phone  # از context استفاده می‌کنیم
+                user__phone=context.phone
             )
-            return user_role.role
+            return user_role.role  # می‌تواند "admin" یا "regular" باشد
+            
         except UserEventRole.DoesNotExist:
             return None
 
