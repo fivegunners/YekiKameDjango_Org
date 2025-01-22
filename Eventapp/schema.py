@@ -190,17 +190,20 @@ class Query(graphene.ObjectType):
 
     def resolve_user_events(self, info, phone):
         try:
+            if not phone:  # اگر phone خالی باشد
+                return []
+                
             user = User.objects.get(phone=phone)
             current_date = timezone.now()
             
-            # ترکیب رویدادهای عادی و رویدادهایی که کاربر owner آنهاست
+            # فقط رویدادهایی که کاربر در آنها regular است
             return Event.objects.filter(
-                (
-                    Q(subscribers=user, usereventrole__is_approved=True, usereventrole__role='regular') |
-                    Q(event_owner=user)
-                ) &
-                Q(end_date__gte=current_date)  # رویدادهای جاری و آینده
-            ).distinct().order_by('-start_date')
+                subscribers=user,
+                usereventrole__is_approved=True,
+                usereventrole__role='regular',
+                end_date__gte=current_date  # رویدادهای جاری و آینده
+            ).order_by('-start_date')
+        
         except User.DoesNotExist:
             return []
 
