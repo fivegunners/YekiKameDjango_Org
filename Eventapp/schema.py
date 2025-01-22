@@ -10,14 +10,28 @@ from graphene_file_upload.scalars import Upload
 from django.utils import timezone
 
 class EventType(DjangoObjectType):
-    subscriber_count = graphene.Int()  # اضافه کردن فیلد subscriber_count به صورت دستی
+    subscriber_count = graphene.Int()
 
     class Meta:
         model = Event
 
     def resolve_subscriber_count(self, info):
-        # برگرداندن تعداد مشترکین از تعداد مرتبطین با فیلد subscribers
-        return self.subscribers.count()
+        # شمارش کاربران تایید شده به علاوه owner
+        approved_count = UserEventRole.objects.filter(
+            event=self,
+            is_approved=True
+        ).count()
+        
+        # اگر owner در subscribers نیست، یک نفر اضافه می‌کنیم
+        owner_is_subscriber = UserEventRole.objects.filter(
+            event=self,
+            user=self.event_owner
+        ).exists()
+        
+        if not owner_is_subscriber:
+            approved_count += 1
+            
+        return approved_count
 
 class PastEventType(DjangoObjectType):
     role = graphene.String()
@@ -79,7 +93,16 @@ class EventDetailType(DjangoObjectType):
     def resolve_subscriber_count(self, info):
         return self.subscribers.count()  # محاسبه تعداد subscribers
 
+class JoinRequestType(DjangoObjectType):
+    user = graphene.Field(UserType)
+    created_at = graphene.DateTime()
 
+    class Meta:
+        model = UserEventRole
+        fields = ('id', 'role', 'is_approved', 'created_at')
+
+    def resolve_user(self, info):
+        return self.user
 
 class EventDetailResponseType(graphene.ObjectType):
     event = graphene.Field(EventDetailType)
@@ -149,6 +172,11 @@ class Query(graphene.ObjectType):
         limit=graphene.Int(default_value=10) 
     )
     past_events = graphene.List(PastEventType, phone=graphene.String(required=True))
+    pending_join_requests = graphene.List(
+        JoinRequestType,
+        event_id=graphene.ID(required=True),
+        owner_phone=graphene.String(required=True)
+    )
     def resolve_admin_events(self, info, phone):
         try:
             user = User.objects.get(phone=phone)
@@ -163,11 +191,16 @@ class Query(graphene.ObjectType):
     def resolve_user_events(self, info, phone):
         try:
             user = User.objects.get(phone=phone)
+            current_date = timezone.now()
+            
+            # ترکیب رویدادهای عادی و رویدادهایی که کاربر owner آنهاست
             return Event.objects.filter(
-                subscribers=user,
-                usereventrole__is_approved=True,
-                usereventrole__role='regular'
-            ).order_by('-start_date')
+                (
+                    Q(subscribers=user, usereventrole__is_approved=True, usereventrole__role='regular') |
+                    Q(event_owner=user)
+                ) &
+                Q(end_date__gte=current_date)  # رویدادهای جاری و آینده
+            ).distinct().order_by('-start_date')
         except User.DoesNotExist:
             return []
 
@@ -250,11 +283,14 @@ class Query(graphene.ObjectType):
         try:
             user = User.objects.get(phone=phone)
             
-            # پیدا کردن همه رویدادهای گذشته کاربر
+            # پیدا کردن همه رویدادهای گذشته کاربر (شامل رویدادهایی که owner است)
             past_events = Event.objects.filter(
-                Q(subscribers=user) &  # رویدادهایی که کاربر در آنها عضو است
-                Q(end_date__lt=current_date)  # رویدادهایی که تاریخ پایان آنها گذشته است
-            ).order_by('-end_date')  # مرتب‌سازی بر اساس تاریخ پایان (جدیدترین اول)
+                (
+                    Q(subscribers=user) |  # رویدادهایی که کاربر در آنها عضو است
+                    Q(event_owner=user)    # رویدادهایی که کاربر owner آنهاست
+                ) &
+                Q(end_date__lt=current_date)  # رویدادهایی که تمام شده‌اند
+            ).distinct().order_by('-end_date')
 
             # اضافه کردن phone به context برای استفاده در resolve_role
             info.context.phone = phone
@@ -262,6 +298,24 @@ class Query(graphene.ObjectType):
             return past_events
 
         except User.DoesNotExist:
+            return []
+
+    def resolve_pending_join_requests(self, info, event_id, owner_phone):
+        try:
+            # بررسی دسترسی owner
+            event = Event.objects.get(id=event_id)
+            owner = User.objects.get(phone=owner_phone)
+            
+            if event.event_owner != owner:
+                raise PermissionDenied("Only the event owner can view join requests")
+
+            # دریافت درخواست‌های در انتظار
+            return UserEventRole.objects.filter(
+                event_id=event_id,
+                is_approved__isnull=True  # فقط درخواست‌های در انتظار
+            ).order_by('created_at')  # مرتب‌سازی بر اساس زمان ثبت (قدیمی‌ترین اول)
+
+        except (Event.DoesNotExist, User.DoesNotExist):
             return []
 class CreateEvent(graphene.Mutation):
     class Arguments:
@@ -512,24 +566,30 @@ class ReviewJoinRequest(graphene.Mutation):
 
     def mutate(self, info, event_id, user_id, action, owner_phone, role=None):
         try:
-            # بررسی وجود رویداد
             event = Event.objects.get(id=event_id)
-            # بررسی اینکه کاربر بررسی‌کننده مالک رویداد باشد
             owner = User.objects.get(phone=owner_phone)
             if event.event_owner != owner:
                 raise PermissionDenied("You are not authorized to review join requests for this event.")
 
-            # بررسی وجود رابطه کاربر-رویداد
             user_event_role = UserEventRole.objects.get(event=event, user_id=user_id)
+            user = User.objects.get(id=user_id)
 
             if action == "approve":
                 user_event_role.is_approved = True
                 user_event_role.role = role if role in ["regular", "admin"] else "regular"
                 user_event_role.save()
+                
+                # اضافه کردن کاربر به subscribers
+                event.subscribers.add(user)
+                
                 return ReviewJoinRequest(success=True, message=f"User request approved successfully with role '{user_event_role.role}'.")
             elif action == "reject":
                 user_event_role.is_approved = False
                 user_event_role.save()
+                
+                # حذف کاربر از subscribers اگر قبلاً اضافه شده بود
+                event.subscribers.remove(user)
+                
                 return ReviewJoinRequest(success=True, message="User request rejected successfully.")
             else:
                 return ReviewJoinRequest(success=False, message="Invalid action provided.")
