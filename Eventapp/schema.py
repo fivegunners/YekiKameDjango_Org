@@ -19,6 +19,23 @@ class EventType(DjangoObjectType):
         # برگرداندن تعداد مشترکین از تعداد مرتبطین با فیلد subscribers
         return self.subscribers.count()
 
+class PastEventType(DjangoObjectType):
+    role = graphene.String()
+
+    class Meta:
+        model = Event
+        fields = ('id', 'title', 'start_date', 'end_date', 'event_category', 'neighborhood', 'city')
+
+    def resolve_role(self, info):
+        context = info.context
+        try:
+            user_role = UserEventRole.objects.get(
+                event=self,
+                user__phone=context.phone  # از context استفاده می‌کنیم
+            )
+            return user_role.role
+        except UserEventRole.DoesNotExist:
+            return None
 
 class ReviewType(DjangoObjectType):
     class Meta:
@@ -125,6 +142,7 @@ class Query(graphene.ObjectType):
         title=graphene.String(required=True),
         limit=graphene.Int(default_value=10) 
     )
+    past_events = graphene.List(PastEventType, phone=graphene.String(required=True))
     def resolve_admin_events(self, info, phone):
         try:
             user = User.objects.get(phone=phone)
@@ -221,7 +239,24 @@ class Query(graphene.ObjectType):
             Q(title__icontains=title) &  # جستجو در عنوان (case-insensitive)
             Q(registration_end_date__gte=current_date) 
         ).order_by('-start_date')[:limit]
+    def resolve_past_events(self, info, phone):
+        current_date = timezone.now()
+        try:
+            user = User.objects.get(phone=phone)
+            
+            # پیدا کردن همه رویدادهای گذشته کاربر
+            past_events = Event.objects.filter(
+                Q(subscribers=user) &  # رویدادهایی که کاربر در آنها عضو است
+                Q(end_date__lt=current_date)  # رویدادهایی که تاریخ پایان آنها گذشته است
+            ).order_by('-end_date')  # مرتب‌سازی بر اساس تاریخ پایان (جدیدترین اول)
 
+            # اضافه کردن phone به context برای استفاده در resolve_role
+            info.context.phone = phone
+            
+            return past_events
+
+        except User.DoesNotExist:
+            return []
 class CreateEvent(graphene.Mutation):
     class Arguments:
         title = graphene.String(required=True)
