@@ -448,14 +448,14 @@ class RequestJoinEvent(graphene.Mutation):
             )
 
             if not created:
-                return RequestJoinEvent(success=False, message="You have already requested to join this event.")
+                return RequestJoinEvent(success=False, message="شما قبلا درخواست عضویت خود را ارسال کرده اید.")
 
-            return RequestJoinEvent(success=True, message="Request to join the event has been sent successfully.")
+            return RequestJoinEvent(success=True, message="درخواست عضویت شما با موفقیت ارسال گردید.")
 
         except Event.DoesNotExist:
-            return RequestJoinEvent(success=False, message="Event not found.")
+            return RequestJoinEvent(success=False, message="رویداد پیدا نشد.")
         except User.DoesNotExist:
-            return RequestJoinEvent(success=False, message="User not found.")
+            return RequestJoinEvent(success=False, message="کاربر یافت نشد.")
 
 
 class ReviewJoinRequest(graphene.Mutation):
