@@ -46,17 +46,16 @@ class UserEventRole(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='regular')
-    is_approved = models.BooleanField(null=True, blank=True, default=None)  # برای تائید یا رد کاربران
+    is_approved = models.BooleanField(null=True, blank=True, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)  # اضافه کردن این فیلد
 
     class Meta:
         unique_together = ('user', 'event')
+        verbose_name = "نقش کاربر در رویداد"
+        verbose_name_plural = "نقش کاربرها در رویداد"
 
     def __str__(self):
         return f"{self.user.fullname} - {self.event.title} - {self.role}"
-
-    class Meta:
-        verbose_name = "نقش کاربر در رویداد"
-        verbose_name_plural = "نقش کاربرها در رویداد"
 
 
 class EventFeature(models.Model):
