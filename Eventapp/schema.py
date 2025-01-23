@@ -146,6 +146,26 @@ class CheckJoinRequestStatus(graphene.ObjectType):
         except UserEventRole.DoesNotExist:
             return CheckJoinRequestStatus(message="No join request found for this event.")
 
+class NotificationType(DjangoObjectType):
+    event_title = graphene.String()
+    status_message = graphene.String()
+    
+    class Meta:
+        model = UserEventRole
+        fields = ('id', 'event', 'role', 'is_approved', 'created_at')
+
+    def resolve_event_title(self, info):
+        return self.event.title
+
+    def resolve_status_message(self, info):
+        if self.is_approved is True:
+            if self.role == "admin":
+                return f"شما به عنوان ادمین در رویداد {self.event.title} پذیرفته شدید"
+            else:
+                return f"درخواست عضویت شما در رویداد {self.event.title} پذیرفته شد"
+        elif self.is_approved is False:
+            return f"درخواست عضویت شما در رویداد {self.event.title} رد شد"
+        return None
 
 class Query(graphene.ObjectType):
     search_events_by_city = graphene.List(EventType, city=graphene.String(required=True))
@@ -176,6 +196,11 @@ class Query(graphene.ObjectType):
         JoinRequestType,
         event_id=graphene.ID(required=True),
         owner_phone=graphene.String(required=True)
+    )
+    user_notifications = graphene.List(NotificationType, phone=graphene.String(required=True))
+    mark_notification_as_read = graphene.Boolean(
+        user_event_role_id=graphene.ID(required=True),
+        phone=graphene.String(required=True)
     )
     def resolve_admin_events(self, info, phone):
         try:
@@ -320,6 +345,42 @@ class Query(graphene.ObjectType):
 
         except (Event.DoesNotExist, User.DoesNotExist):
             return []
+    def resolve_user_notifications(self, info, phone):
+        try:
+            user = User.objects.get(phone=phone)
+            current_date = timezone.now()
+            
+            # دریافت درخواست‌های بررسی شده که:
+            # 1. هنوز خوانده نشده‌اند
+            # 2. مربوط به رویدادهای جاری یا آینده هستند
+            return UserEventRole.objects.filter(
+                user=user,
+                is_approved__isnull=False,  # فقط درخواست‌های بررسی شده
+                event__end_date__gte=current_date  # فقط رویدادهای جاری و آینده
+            ).exclude(
+                notificationstatus__user=user,  # حذف موارد خوانده شده
+                notificationstatus__is_read=True
+            ).order_by('-created_at')
+
+        except User.DoesNotExist:
+            return []
+
+    def resolve_mark_notification_as_read(self, info, user_event_role_id, phone):
+        try:
+            user = User.objects.get(phone=phone)
+            user_event_role = UserEventRole.objects.get(id=user_event_role_id)
+            
+            # ایجاد یا به‌روزرسانی وضعیت اعلان
+            NotificationStatus.objects.update_or_create(
+                user=user,
+                user_event_role=user_event_role,
+                defaults={'is_read': True}
+            )
+            
+            return True
+
+        except (User.DoesNotExist, UserEventRole.DoesNotExist):
+            return False
 class CreateEvent(graphene.Mutation):
     class Arguments:
         title = graphene.String(required=True)

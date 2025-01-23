@@ -109,3 +109,11 @@ class Comment(models.Model):
                 name='max_level_3'
             )
         ]
+class NotificationStatus(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_event_role = models.ForeignKey(UserEventRole, on_delete=models.CASCADE)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'user_event_role')
