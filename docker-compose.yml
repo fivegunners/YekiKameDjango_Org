@@ -11,7 +11,7 @@ services:
       - DEBUG=False
       - DB_NAME=Yekikame
       - DB_USER=postgres
-      - DB_PASSWORD=403723807
+      - DB_PASSWORD=postgres
       - DB_HOST=db
       - DB_PORT=5432
     volumes:
