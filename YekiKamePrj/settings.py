@@ -14,7 +14,6 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -22,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-y50j*)hrzriga5nih9ef#x=u40aq8g$sw(u=*t$h+=$d+7kj-w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [ '*'
 
@@ -64,21 +63,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-<<<<<<< HEAD
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5173",
-#     "http://localhost:8080",
-#     "http://127.0.0.1:9000",
-# ]
-
-CORS_ALLOW_ALL_ORIGINS = True
-=======
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:9000",
     "http://localhost:5173",
 ]
->>>>>>> remotes/origin/develope
 
 ROOT_URLCONF = 'YekiKamePrj.urls'
 
@@ -120,8 +109,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Yekikame',
         'USER': 'postgres',
-        'PASSWORD': '403723807',
-        'HOST': 'db',  # یا آدرس IP سرور پایگاه داده
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',  # یا آدرس IP سرور پایگاه داده
         'PORT': '5432',  # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
     }
 }
@@ -175,12 +164,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_ROOT = '/app/static_media/'
+
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static_media/')
 # Serve static files during development
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, 'static'),
 # ]
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static_media/')
 
 # Default primary key field type

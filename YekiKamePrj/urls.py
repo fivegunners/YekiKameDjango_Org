@@ -1,3 +1,9 @@
+from django.urls import path
+from django.contrib import admin
+from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+from django.conf.urls.static import static
 """
 URL configuration for YekiKamePrj project.
 
@@ -28,3 +34,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("graphql/", csrf_exempt(FileUploadGraphQLView.as_view(graphiql=True, schema=schema))),
 ]
+urlpatterns.extend(static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT))
+
+if settings.DEBUG:  # True میشه چون DEBUG = True
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
