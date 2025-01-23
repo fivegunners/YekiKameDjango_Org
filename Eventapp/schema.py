@@ -599,23 +599,76 @@ class RequestJoinEvent(graphene.Mutation):
             # بررسی وجود کاربر
             user = User.objects.get(phone=phone)
 
-            # ایجاد درخواست پیوستن
-            user_event_role, created = UserEventRole.objects.get_or_create(
+            # بررسی اینکه آیا کاربر owner است
+            if event.event_owner == user:
+                return RequestJoinEvent(
+                    success=False,
+                    message="شما مالک این رویداد هستید و نیازی به درخواست عضویت ندارید."
+                )
+
+            # بررسی تعداد اعضای فعلی
+            current_members = UserEventRole.objects.filter(
+                event=event,
+                is_approved=True
+            ).count()
+
+            if current_members >= event.max_subscribers:
+                return RequestJoinEvent(
+                    success=False,
+                    message="ظرفیت این رویداد تکمیل شده است."
+                )
+
+            # بررسی وضعیت فعلی درخواست
+            existing_request = UserEventRole.objects.filter(
+                user=user,
+                event=event
+            ).first()
+
+            if existing_request:
+                if existing_request.is_approved is True:
+                    return RequestJoinEvent(
+                        success=False,
+                        message="شما قبلاً به این رویداد پیوسته‌اید."
+                    )
+                elif existing_request.is_approved is False:
+                    return RequestJoinEvent(
+                        success=False,
+                        message="درخواست قبلی شما رد شده است."
+                    )
+                else:  # is_approved is None
+                    return RequestJoinEvent(
+                        success=False,
+                        message="درخواست قبلی شما در حال بررسی است."
+                    )
+
+            # ایجاد درخواست جدید
+            UserEventRole.objects.create(
                 user=user,
                 event=event,
-                defaults={"role": "regular", "is_approved": None}
+                role="regular",
+                is_approved=None
             )
 
-            if not created:
-                return RequestJoinEvent(success=False, message="شما قبلا درخواست عضویت خود را ارسال کرده اید.")
-
-            return RequestJoinEvent(success=True, message="درخواست عضویت شما با موفقیت ارسال گردید.")
+            return RequestJoinEvent(
+                success=True,
+                message="درخواست عضویت شما با موفقیت ثبت شد."
+            )
 
         except Event.DoesNotExist:
-            return RequestJoinEvent(success=False, message="رویداد پیدا نشد.")
+            return RequestJoinEvent(
+                success=False,
+                message="رویداد مورد نظر یافت نشد."
+            )
         except User.DoesNotExist:
-            return RequestJoinEvent(success=False, message="کاربر یافت نشد.")
-
+            return RequestJoinEvent(
+                success=False,
+                message="کاربر یافت نشد."
+            )
+        except Exception as e:
+            return RequestJoinEvent(
+                success=False,
+                message=f"خطای غیرمنتظره: {str(e)}"
+            )
 
 class ReviewJoinRequest(graphene.Mutation):
     class Arguments:
