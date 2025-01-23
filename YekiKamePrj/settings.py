@@ -110,7 +110,7 @@ DATABASES = {
         'NAME': 'Yekikame',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'localhost',  # یا آدرس IP سرور پایگاه داده
+        'HOST': 'db',  # یا آدرس IP سرور پایگاه داده
         'PORT': '5432',  # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
     }
 }
