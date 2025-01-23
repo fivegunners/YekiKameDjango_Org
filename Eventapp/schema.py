@@ -361,7 +361,7 @@ class CreateEvent(graphene.Mutation):
         # ذخیره‌سازی تصویر
         image_path = None
         if image:
-            image_path = f"event_images/{image.name}"
+            image_path = f"http://localhost:8000/media/event_images/{image.name}"
             with open(image_path, "wb") as f:
                 f.write(image.read())
 
