@@ -149,7 +149,8 @@ class CheckJoinRequestStatus(graphene.ObjectType):
 class NotificationType(DjangoObjectType):
     event_title = graphene.String()
     status_message = graphene.String()
-    
+    user_event_role_id = graphene.ID()
+
     class Meta:
         model = UserEventRole
         fields = ('id', 'event', 'role', 'is_approved', 'created_at')
@@ -165,7 +166,10 @@ class NotificationType(DjangoObjectType):
                 return f"درخواست عضویت شما در رویداد {self.event.title} پذیرفته شد"
         elif self.is_approved is False:
             return f"درخواست عضویت شما در رویداد {self.event.title} رد شد"
+        
         return None
+    def resolve_user_event_role_id(self, info):
+        return self.id 
 
 class Query(graphene.ObjectType):
     search_events_by_city = graphene.List(EventType, city=graphene.String(required=True))
