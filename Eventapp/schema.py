@@ -1,7 +1,7 @@
 import graphene
 from django.db.models import Count
 from graphene_django.types import DjangoObjectType
-from .models import Event, Review, Comment, EventFeature, UserEventRole
+from .models import Event, Review, Comment, EventFeature, UserEventRole, NotificationStatus
 from userapp.models import User
 import random
 from django.db.models import Q
@@ -388,20 +388,37 @@ class Query(graphene.ObjectType):
 
     def resolve_mark_notification_as_read(self, info, user_event_role_id, phone):
         try:
+            # پیدا کردن کاربر
             user = User.objects.get(phone=phone)
+            
+            # پیدا کردن UserEventRole
             user_event_role = UserEventRole.objects.get(id=user_event_role_id)
             
+            # بررسی اینکه آیا این اعلان متعلق به این کاربر است
+            if user_event_role.user != user:
+                return False
+            
             # ایجاد یا به‌روزرسانی وضعیت اعلان
-            NotificationStatus.objects.update_or_create(
+            notification_status, created = NotificationStatus.objects.get_or_create(
                 user=user,
                 user_event_role=user_event_role,
                 defaults={'is_read': True}
             )
             
+            if not created:
+                notification_status.is_read = True
+                notification_status.save()
+            
             return True
 
-        except (User.DoesNotExist, UserEventRole.DoesNotExist):
+        except User.DoesNotExist:
             return False
+        except UserEventRole.DoesNotExist:
+            return False
+        except Exception as e:
+            print(f"Error in mark_notification_as_read: {str(e)}")
+            return False
+            
 class CreateEvent(graphene.Mutation):
     class Arguments:
         title = graphene.String(required=True)
