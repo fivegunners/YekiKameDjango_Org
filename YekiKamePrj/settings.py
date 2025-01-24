@@ -54,10 +54,31 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:9000",
+    "http://localhost:5173",
+
 ]
 
 ROOT_URLCONF = 'YekiKamePrj.urls'
@@ -89,9 +110,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Yekikame',
         'USER': 'postgres',
-        'PASSWORD': '403723807',
+        'PASSWORD': 'postgres',
         'HOST': 'localhost',  # یا آدرس IP سرور پایگاه داده
-        'PORT': '',  # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
+        'PORT': '5432',  # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
     }
 }
 
@@ -131,9 +152,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_media/')
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

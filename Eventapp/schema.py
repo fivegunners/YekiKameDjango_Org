@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from graphene_file_upload.scalars import Upload
 from django.utils import timezone
+from django.core.files.storage import default_storage
 
 class EventType(DjangoObjectType):
     subscriber_count = graphene.Int()
@@ -390,27 +391,28 @@ class CreateEvent(graphene.Mutation):
         title = graphene.String(required=True)
         event_category = graphene.String(required=True)
         about_event = graphene.String(required=True)
-        image = Upload(required=False)  # آپلود فایل تصویر
+        image = Upload(required=False)
         start_date = graphene.DateTime(required=True)
         end_date = graphene.DateTime(required=True)
         registration_start_date = graphene.DateTime(required=True)
         registration_end_date = graphene.DateTime(required=True)
         province = graphene.String(required=True)
         city = graphene.String(required=True)
-        neighborhood = graphene.String(required=False)  # محله
-        postal_address = graphene.String(required=False)  # آدرس پستی
-        postal_code = graphene.String(required=False)  # کد پستی
-        full_description = graphene.String(required=False)  # توضیحات کامل
+        neighborhood = graphene.String(required=False)
+        postal_address = graphene.String(required=False)
+        postal_code = graphene.String(required=False)
+        full_description = graphene.String(required=False)
         max_subscribers = graphene.Int(required=True)
-        event_owner_phone = graphene.String(required=True)  # شماره تلفن مالک رویداد
+        event_owner_phone = graphene.String(required=True)
 
     event = graphene.Field(EventType)
 
     def mutate(self, info, title, event_category, about_event, start_date, end_date,
                registration_start_date, registration_end_date, province, city,
-               max_subscribers, event_owner_phone,
+               max_subscribers, event_owner_phone, image=None,
                neighborhood=None, postal_address=None, postal_code=None,
-               full_description=None, image=None):
+               full_description=None):
+        
         # بررسی تاریخ‌های رویداد
         if end_date <= start_date:
             raise ValueError("End date must be after start date")
@@ -423,34 +425,51 @@ class CreateEvent(graphene.Mutation):
         except User.DoesNotExist:
             raise ValueError("User with this phone number does not exist")
 
-        # ذخیره‌سازی تصویر
-        image_path = None
+        # مدیریت آپلود تصویر
+        image_url = None
         if image:
-            image_path = f"http://localhost:8000/media/event_images/{image.name}"
-            with open(image_path, "wb") as f:
-                f.write(image.read())
+            try:
+                # ایجاد نام یکتا برای فایل با استفاده از timestamp
+                timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+                file_name = f"event_images/{timestamp}_{image.name}"
+                
+                # ذخیره فایل با استفاده از default_storage
+                filename = default_storage.save(file_name, image)
+                image_url = default_storage.url(filename)
+            except Exception as e:
+                raise ValueError(f"Error uploading image: {str(e)}")
 
-        # ایجاد رویداد
-        event = Event.objects.create(
-            title=title,
-            event_category=event_category,
-            about_event=about_event,
-            start_date=start_date,
-            end_date=end_date,
-            registration_start_date=registration_start_date,
-            registration_end_date=registration_end_date,
-            province=province,
-            city=city,
-            neighborhood=neighborhood,
-            postal_address=postal_address,
-            postal_code=postal_code,
-            full_description=full_description,
-            max_subscribers=max_subscribers,
-            event_owner=event_owner,
-            image=image_path,
-        )
+        try:
+            # ایجاد رویداد
+            event = Event.objects.create(
+                title=title,
+                event_category=event_category,
+                about_event=about_event,
+                start_date=start_date,
+                end_date=end_date,
+                registration_start_date=registration_start_date,
+                registration_end_date=registration_end_date,
+                province=province,
+                city=city,
+                neighborhood=neighborhood,
+                postal_address=postal_address,
+                postal_code=postal_code,
+                full_description=full_description,
+                max_subscribers=max_subscribers,
+                event_owner=event_owner,
+                image=image_url
+            )
 
-        return CreateEvent(event=event)
+            return CreateEvent(event=event)
+            
+        except Exception as e:
+            # اگر در ایجاد رویداد خطایی رخ داد، فایل آپلود شده را حذف می‌کنیم
+            if image_url:
+                try:
+                    default_storage.delete(filename)
+                except:
+                    pass
+            raise ValueError(f"Error creating event: {str(e)}")
 
 
 class ReviewType(DjangoObjectType):

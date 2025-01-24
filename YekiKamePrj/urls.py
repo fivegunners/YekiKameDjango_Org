@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.conf.urls.static import static
+from graphene_file_upload.django import FileUploadGraphQLView
 """
 URL configuration for YekiKamePrj project.
 
@@ -27,12 +28,11 @@ from graphene_django.views import GraphQLView
 from django.views.decorators.csrf import csrf_exempt
 from .schema import schema
 from django.shortcuts import redirect
-from graphene_file_upload.django import FileUploadGraphQLView
-
 urlpatterns = [
     path('', lambda request: redirect('/admin/')),
     path('admin/', admin.site.urls),
     path("graphql/", csrf_exempt(FileUploadGraphQLView.as_view(graphiql=True, schema=schema))),
+
 ]
 urlpatterns.extend(static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT))
 
