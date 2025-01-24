@@ -75,10 +75,11 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5000",
+    "http://95.217.8.192:5000",
     "http://localhost:8080",
     "http://127.0.0.1:9000",
     "http://localhost:5173",
+    "http://95.217.8.192:5173"
 
 ]
 
