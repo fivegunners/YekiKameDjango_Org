@@ -1,4 +1,3 @@
-
 """
 Django's settings for YekiKamePrj project.
 
@@ -15,6 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -24,16 +24,7 @@ SECRET_KEY = 'django-insecure-y50j*)hrzriga5nih9ef#x=u40aq8g$sw(u=*t$h+=$d+7kj-w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [ '*'
-
-    # '95.217.8.192',
-    # '95.217.8.192:8000',
-    # 'localhost',
-    # '127.0.0.1',
-    
-]
-
-print(ALLOWED_HOSTS)
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -63,12 +54,31 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 CORS_ALLOWED_ORIGINS = [
-    "http://95.217.8.192:5000",
     "http://localhost:8080",
     "http://127.0.0.1:9000",
     "http://localhost:5173",
+
 ]
 
 ROOT_URLCONF = 'YekiKamePrj.urls'
@@ -95,38 +105,16 @@ WSGI_APPLICATION = 'YekiKamePrj.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('POSTGRES_DB', 'db'),
-#         'USER': os.getenv('POSTGRES_USER', 'postgres'),
-#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', '403723807'),
-#         'HOST': os.getenv('DB_HOST', 'db'),
-#         'PORT': os.getenv('DB_PORT', '5432'),
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Yekikame',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'db',  # یا آدرس IP سرور پایگاه داده
+        'HOST': 'localhost',  # یا آدرس IP سرور پایگاه داده
         'PORT': '5432',  # برای استفاده از پورت پیش‌فرض (5432) می‌توانید خالی بگذارید
     }
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'db',  # Match POSTGRES_DB in docker-compose.yml
-#         'USER': 'user',  # Match POSTGRES_USER
-#         'PASSWORD': 'password',  # Match POSTGRES_PASSWORD
-#         'HOST': 'db',  # Match the service name in docker-compose.yml
-#         'PORT': 5432,
-#     }
-# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -163,18 +151,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = '/static/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-STATIC_ROOT = '/app/static_media/'
-
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static_media/')
-# Serve static files during development
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'static'),
-# ]
+STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static_media/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_media/')
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
